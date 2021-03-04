@@ -45,7 +45,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model implements Mode
      */
     public function __construct(array $attributes = [])
     {
-        $this->table = 'EtlMonitor_' . strtolower($this::package()) . '__' . $this->getTable();
+        $this->table = 'etlmonitor_' . strtolower($this::package()) . '__' . $this->getTable();
         parent::__construct($attributes);
     }
 

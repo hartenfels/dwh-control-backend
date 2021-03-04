@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateTimerangesTable extends Migration
+class CreateSlaDefinitionStatiTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,15 +13,10 @@ class CreateTimerangesTable extends Migration
      */
     public function up()
     {
-        Schema::create('etlmonitor_sla__timeranges', function (Blueprint $table) {
+        Schema::create('etlmonitor_sla__sla_definition_stati', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->unsignedBigInteger('sla_definition_id');
 
-            $table->integer('anchor');
-            $table->string('range_start');
-            $table->string('range_end');
-
-            $table->integer('error_margin_minutes');
+            $table->string('name');
 
             $table->timestamps();
         });
@@ -34,6 +29,6 @@ class CreateTimerangesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('etlmonitor_sla__timeranges');
+        Schema::dropIfExists('etlmonitor_sla__sla_definition_stati');
     }
 }

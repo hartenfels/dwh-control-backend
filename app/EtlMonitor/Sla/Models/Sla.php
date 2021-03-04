@@ -13,6 +13,8 @@ use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
+use MathPHP\Statistics\Descriptive;
 
 abstract class Sla extends Model implements SlaInterface
 {
@@ -28,15 +30,28 @@ abstract class Sla extends Model implements SlaInterface
      * @var string[]
      */
     protected $fillable = [
-        'sla_definition_id', 'type',
+        'sla_definition_id', 'type', 'error_margin_minutes',
         'range_start', 'range_end', 'is_open'
+    ];
+
+    /**
+     * @var array|string[]|null
+     */
+    protected ?array $transformable = [
+        'id', 'sla_definition_id', 'type',
+        'range_start', 'range_end', 'achieved_at',
+        'status', 'target_percent', 'is_open', 'error_margin_minutes',
+        'achieved_progress_percent', 'last_progress_percent',
+        'progress_last_intime_id', 'progress_first_intime_achieved_id',
+        'progress_last_late_id', 'progress_first_late_achieved_id',
+        'statistics_average_duration_minutes_lower', 'statistics_average_duration_minutes_upper'
     ];
 
     /**
      * @var string[]
      */
     protected $dates = [
-        'range_start', 'range_end'
+        'range_start', 'range_end', 'achieved_at'
     ];
 
     /**
@@ -173,6 +188,7 @@ abstract class Sla extends Model implements SlaInterface
     {
         $this->status = 'achieved';
         $this->achieved_progress_percent = $progress->progress_percent;
+        $this->achieved_at = $progress->time;
 
         return $this;
     }
@@ -180,13 +196,15 @@ abstract class Sla extends Model implements SlaInterface
     /**
      * @param SlaProgressInterface|null $progress_last_intime
      * @param SlaProgressInterface|null $progress_last_late
+     * @param SlaProgressInterface|null $progress_achieved_late
      * @return SlaInterface
      */
-    public function setFailed(SlaProgressInterface $progress_last_intime = null, SlaProgressInterface $progress_last_late = null): self
+    public function setFailed(SlaProgressInterface $progress_last_intime = null, SlaProgressInterface $progress_last_late = null, SlaProgressInterface $progress_achieved_late = null): self
     {
         $this->status = 'failed';
         $this->achieved_progress_percent = $progress_last_intime?->progress_percent;
         $this->last_progress_percent = $progress_last_late?->progress_percent;
+        $this->achieved_at = $progress_last_late?->time;
 
         return $this;
     }
@@ -218,6 +236,38 @@ abstract class Sla extends Model implements SlaInterface
     public function matchesTimerange(TimerangeInterface $timerange): bool
     {
         return $timerange->matchesSla($this);
+    }
+
+    /**
+     * @param int $size
+     * @param bool $save
+     * @return Sla
+     * @throws \MathPHP\Exception\BadDataException
+     * @throws \MathPHP\Exception\OutOfBoundsException
+     */
+    public function calculateStatistics(int $size = 30, bool $save = true): self
+    {
+        /** @var Collection<SlaInterface> $slas */
+        $slas = static::sla_types()->{static::$type}->sla::where('type', $this->type)
+            ->where('sla_definition_id', $this->sla_definition_id)
+            ->where('range_start', '<', $this->range_start)
+            ->orderBy('range_start', 'desc')
+            ->limit($size)->get();
+
+        if ($slas->count() < 1) return $this;
+
+        $achieved = $slas->filter(function (SlaInterface $sla) {
+            return !is_null($sla->achieved_at);
+        })->map(function (SlaInterface $sla)  {
+            return $sla->achieved_at->diffInMinutes($sla->range_start);
+        })->toArray();
+
+        $this->statistics_average_duration_minutes_lower = Descriptive::percentile($achieved, 25);
+        $this->statistics_average_duration_minutes_upper = Descriptive::percentile($achieved, 75);
+
+        if ($save) $this->save();
+
+        return $this;
     }
 
     /**

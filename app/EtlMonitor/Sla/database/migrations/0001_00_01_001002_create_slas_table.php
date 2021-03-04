@@ -20,6 +20,12 @@ class CreateSlasTable extends Migration
 
             $table->timestamp('range_start');
             $table->timestamp('range_end');
+            $table->timestamp('achieved_at')->nullable();
+
+            $table->integer('error_margin_minutes');
+
+            $table->double('statistics_average_duration_minutes_lower')->nullable();
+            $table->double('statistics_average_duration_minutes_upper')->nullable();
 
             $table->boolean('is_open')->nullable()->default(true);
             $table->string('status')->nullable()->default('waiting');

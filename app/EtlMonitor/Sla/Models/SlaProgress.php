@@ -21,6 +21,10 @@ abstract class SlaProgress extends Model implements SlaProgressInterface
         'time', 'progress_percent', 'source'
     ];
 
+    protected $dates = [
+        'time'
+    ];
+
     /**
      * @var string
      */

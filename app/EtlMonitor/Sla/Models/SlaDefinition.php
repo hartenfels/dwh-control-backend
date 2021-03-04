@@ -9,6 +9,7 @@ use App\EtlMonitor\Sla\Models\Interfaces\TimerangeInterface;
 use App\EtlMonitor\Sla\Traits\SlaTypes;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
@@ -27,13 +28,28 @@ abstract class SlaDefinition extends Model implements SlaDefinitionInterface
      * @var string[]
      */
     protected $fillable = [
-        'name', 'type'
+        'name', 'type', 'status_id'
+    ];
+
+    /**
+     * @var string[]
+     */
+    protected $with = [
+        'status'
     ];
 
     /**
      * @var string
      */
     protected static string $type = '';
+
+    /**
+     * @return BelongsTo
+     */
+    public function status(): BelongsTo
+    {
+        return $this->belongsTo(SlaDefinitionStatus::class, 'status_id');
+    }
 
     /**
      * @return HasMany
@@ -64,7 +80,8 @@ abstract class SlaDefinition extends Model implements SlaDefinitionInterface
         $sla = $this->slas()->create([
             'timerange_id' => $timerange->id,
             'range_start' => $timerange->start($time),
-            'range_end' => $timerange->end($time)
+            'range_end' => $timerange->end($time),
+            'error_margin_minutes' => $timerange->error_margin_minutes
         ]);
 
         return $sla;

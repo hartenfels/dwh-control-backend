@@ -112,7 +112,7 @@ class DeliverableSla extends Sla
         }
 
         if ($has_achieved_late) {
-            $this->setFailed($this->progress_last_intime, $this->progress_last_late)->setClosed()->save();
+            $this->setFailed($this->progress_last_intime, $this->progress_last_late, $this->progress_first_late_achieved)->setClosed()->save();
             return $this;
         }
 

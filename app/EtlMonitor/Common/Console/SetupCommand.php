@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Artisan;
 class SetupCommand extends Command
 {
 
-    protected $signature = 'etl_monitor:setup {--db-only}';
+    protected $signature = 'etl_monitor:setup {--skip-auth} {--skip-queues}';
 
     protected $description = 'Initial Setup';
 
@@ -19,20 +19,25 @@ class SetupCommand extends Command
         echo '# Generating app key ...' . PHP_EOL;
         Artisan::call('key:generate');
 
-        if (!$this->option('db-only')) {
+        if (!$this->option('skip-auth')) {
             echo '# Setting up authentication provider ...' . PHP_EOL;
             Artisan::call('vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"');
             Artisan::call('jetstream:install livewire');
         }
 
-        echo '# Setting up queues ...' . PHP_EOL;
-        Artisan::call('queue:table');
+        if (!$this->option('skip-queues')) {
+            echo '# Setting up queues ...' . PHP_EOL;
+            Artisan::call('queue:table');
+        }
 
         echo '# Migrating database ...' . PHP_EOL;
         Artisan::call('migrate');
 
         echo '# Setting up defaults ...' . PHP_EOL;
         $defaults = [
+            'Sla' => [
+                'sla_definition_stati'
+            ]
         ];
 
         foreach ($defaults as $namespace => $files) {
