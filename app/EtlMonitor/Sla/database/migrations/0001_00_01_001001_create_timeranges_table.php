@@ -16,6 +16,7 @@ class CreateTimerangesTable extends Migration
         Schema::create('etlmonitor_sla__timeranges', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('sla_definition_id');
+            $table->string('type');
 
             $table->integer('anchor');
             $table->string('range_start');
@@ -24,6 +25,11 @@ class CreateTimerangesTable extends Migration
             $table->integer('error_margin_minutes');
 
             $table->timestamps();
+        });
+
+        Schema::table('etlmonitor_sla__timeranges', function (Blueprint $table) {
+            $table->index(['sla_definition_id']);
+            $table->unique(['sla_definition_id', 'type', 'anchor']);
         });
     }
 

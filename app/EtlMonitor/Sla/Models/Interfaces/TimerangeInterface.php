@@ -31,6 +31,12 @@ interface TimerangeInterface extends ModelInterface
     public function inRange(CarbonInterface $time = null): bool;
 
     /**
+     * @param CarbonInterface $day
+     * @return bool
+     */
+    public function startsOn(CarbonInterface $day): bool;
+
+    /**
      * @param CarbonInterface|null $time
      * @return string
      */

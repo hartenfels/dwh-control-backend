@@ -24,9 +24,6 @@ class CreateSlasTable extends Migration
 
             $table->integer('error_margin_minutes');
 
-            $table->double('statistics_average_duration_minutes_lower')->nullable();
-            $table->double('statistics_average_duration_minutes_upper')->nullable();
-
             $table->boolean('is_open')->nullable()->default(true);
             $table->string('status')->nullable()->default('waiting');
 
@@ -44,6 +41,7 @@ class CreateSlasTable extends Migration
 
         Schema::table('etlmonitor_sla__slas', function (Blueprint $table) {
             $table->foreign('sla_definition_id', 'sla__definition_foreign')->references('id')->on('etlmonitor_sla__sla_definitions');
+            $table->index(['sla_definition_id', 'type']);
         });
     }
 

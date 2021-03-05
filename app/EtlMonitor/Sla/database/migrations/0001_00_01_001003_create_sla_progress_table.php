@@ -29,6 +29,8 @@ class CreateSlaProgressTable extends Migration
 
         Schema::table('etlmonitor_sla__sla_progress', function (Blueprint $table) {
             $table->foreign('sla_id', 'sla_progress__sla_foreign')->references('id')->on('etlmonitor_sla__slas');
+            $table->index(['sla_id', 'type']);
+            $table->index(['sla_id', 'type', 'is_override']);
         });
     }
 

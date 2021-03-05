@@ -48,7 +48,7 @@ class SeedCommand extends Command
                 $d->daily_timeranges()->create([
                     'anchor' => $i,
                     'range_start' => '00:00',
-                    'range_end' => $f->time(),
+                    'range_end' => $f->time('H:i'),
                     'error_margin_minutes' => random_int(30, 120)
                 ]);
             }
@@ -61,7 +61,7 @@ class SeedCommand extends Command
                     $f = Factory::create();
                     $pd = clone $day;
                     $mins_start = $sla->range_start->diffInMinutes((clone $sla)->range_start);
-                    $mins_end = $sla->range_start->diffInMinutes($sla->range_end) * 1.1;
+                    $mins_end = $sla->range_start->diffInMinutes($sla->range_end) * 1.5;
                     $random_min = random_int($mins_start, $mins_end);
                     $pd->startOfDay()->addMinutes($random_min);
                     $sla->addProgress($pd, progress_percent: 100, source: 'Seed', calculate: true);

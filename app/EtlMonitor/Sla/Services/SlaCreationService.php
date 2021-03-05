@@ -48,7 +48,7 @@ class SlaCreationService extends Service
      */
     private function timeranges(): Collection
     {
-        return $this->definition->timeranges()->filter(fn(TimerangeInterface $timerange) => $timerange->inRange($this->time));
+        return $this->definition->timeranges()->filter(fn(TimerangeInterface $timerange) => $timerange->startsOn($this->time));
     }
 
     /**
@@ -57,8 +57,7 @@ class SlaCreationService extends Service
     private function slas(): Collection
     {
         return $this->definition->slas()
-            ->where('range_start', '<=', $this->time)
-            ->where('range_end', '>=', $this->time)
+            ->whereDate('range_start', $this->time)
             ->get();
     }
 

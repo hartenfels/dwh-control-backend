@@ -126,6 +126,10 @@ class DeliverableSla extends Sla
             return $this;
         }
 
+        if ($this->range_end->gt($time)) {
+            $this->setLate()->save();
+        }
+
         $this->setWaiting()->save();
         return $this;
     }

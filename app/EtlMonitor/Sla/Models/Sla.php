@@ -13,7 +13,10 @@ use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Collection;
+use MathPHP\Exception\BadDataException;
+use MathPHP\Exception\OutOfBoundsException;
 use MathPHP\Statistics\Descriptive;
 
 abstract class Sla extends Model implements SlaInterface
@@ -52,6 +55,13 @@ abstract class Sla extends Model implements SlaInterface
      */
     protected $dates = [
         'range_start', 'range_end', 'achieved_at'
+    ];
+
+    /**
+     * @var string[]
+     */
+    protected $with = [
+        'definition', 'statistic'
     ];
 
     /**
@@ -188,6 +198,7 @@ abstract class Sla extends Model implements SlaInterface
     {
         $this->status = 'achieved';
         $this->achieved_progress_percent = $progress->progress_percent;
+        $this->last_progress_percent = null;
         $this->achieved_at = $progress->time;
 
         return $this;
@@ -215,6 +226,22 @@ abstract class Sla extends Model implements SlaInterface
     public function setWaiting(): self
     {
         $this->status = 'waiting';
+        $this->achieved_progress_percent = null;
+        $this->last_progress_percent = null;
+        $this->achieved_at = null;
+
+        return $this;
+    }
+
+    /**
+     * @return SlaInterface
+     */
+    public function setLate(): self
+    {
+        $this->status = 'late';
+        $this->achieved_progress_percent = null;
+        $this->last_progress_percent = null;
+        $this->achieved_at = null;
 
         return $this;
     }
@@ -239,43 +266,19 @@ abstract class Sla extends Model implements SlaInterface
     }
 
     /**
-     * @param int $size
-     * @param bool $save
-     * @return Sla
-     * @throws \MathPHP\Exception\BadDataException
-     * @throws \MathPHP\Exception\OutOfBoundsException
-     */
-    public function calculateStatistics(int $size = 30, bool $save = true): self
-    {
-        /** @var Collection<SlaInterface> $slas */
-        $slas = static::sla_types()->{static::$type}->sla::where('type', $this->type)
-            ->where('sla_definition_id', $this->sla_definition_id)
-            ->where('range_start', '<', $this->range_start)
-            ->orderBy('range_start', 'desc')
-            ->limit($size)->get();
-
-        if ($slas->count() < 1) return $this;
-
-        $achieved = $slas->filter(function (SlaInterface $sla) {
-            return !is_null($sla->achieved_at);
-        })->map(function (SlaInterface $sla)  {
-            return $sla->achieved_at->diffInMinutes($sla->range_start);
-        })->toArray();
-
-        $this->statistics_average_duration_minutes_lower = Descriptive::percentile($achieved, 25);
-        $this->statistics_average_duration_minutes_upper = Descriptive::percentile($achieved, 75);
-
-        if ($save) $this->save();
-
-        return $this;
-    }
-
-    /**
      * @return BelongsTo
      */
     public function definition(): BelongsTo
     {
         return $this->belongsTo(static::sla_types()->{static::$type}->definition, 'sla_definition_id');
+    }
+
+    /**
+     * @return HasOne
+     */
+    public function statistic(): HasOne
+    {
+        return $this->hasOne(SlaStatistic::class, 'sla_id');
     }
 
     /**
@@ -316,6 +319,26 @@ abstract class Sla extends Model implements SlaInterface
     public function progress_first_late_achieved(): belongsTo
     {
         return $this->belongsTo(static::sla_types()->{static::$type}->progress, 'progress_first_late_achieved_id');
+    }
+
+    /**
+     * @return $this
+     * @throws BadDataException
+     * @throws OutOfBoundsException
+     */
+    public function calculateStatistics(): self
+    {
+        /** @var SlaStatistic $statistic */
+        if (is_null($this->statistic)) {
+            $statistic = $this->statistic()->create(['type' => $this->type]);
+            $this->fresh();
+        } else {
+            $statistic = $this->statistic;
+        }
+
+        $statistic->calculate();
+
+        return $this;
     }
 
     /**

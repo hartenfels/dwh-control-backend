@@ -36,16 +36,28 @@ class DailyTimerange extends Timerange
 {
 
     /**
+     * @var string[]
+     */
+    protected $attributes = [
+        'type' => 'daily'
+    ];
+
+    /**
+     * @var string
+     */
+    protected static string $type = 'daily';
+
+    /**
      * @param CarbonInterface|null $time
      * @return CarbonInterface
      */
     public function start(CarbonInterface $time = null): CarbonInterface
     {
-        $time = $time ? clone $time : Carbon::now();
-        $time->subDays($time->dayOfWeek-1)->addDays((int)$this->anchor); // Set to week day
-        $time->setTimeFromTimeString($this->range_start); // Set time
+        $t = $time ? clone $time : Carbon::now();
+        $t->startOfWeek()->addDays((int)$this->anchor - 1); // Set to week day
+        $t->setTimeFromTimeString($this->range_start); // Set time
 
-        return $time;
+        return $t;
     }
 
     /**
@@ -54,11 +66,11 @@ class DailyTimerange extends Timerange
      */
     public function end(CarbonInterface $time = null): CarbonInterface
     {
-        $time = $time ? clone $time : Carbon::now();
-        $time->subDays($time->dayOfWeek-1)->addDays((int)$this->anchor); // Set to week day
-        $time->setTimeFromTimeString($this->range_end); // Set time
+        $t = $time ? clone $time : Carbon::now();
+        $t->startOfWeek()->addDays((int)$this->anchor - 1); // Set to week day
+        $t->setTimeFromTimeString($this->range_end); // Set time
 
-        return $time;
+        return $t;
     }
 
     /**

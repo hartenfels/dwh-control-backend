@@ -58,10 +58,9 @@ interface SlaInterface extends ModelInterface
     public function calculate(CarbonInterface $time = null): self;
 
     /**
-     * @param int $size
      * @return $this
      */
-    public function calculateStatistics(int $size = 30, bool $save = true): self;
+    public function calculateStatistics(): self;
 
     /**
      * @param TimerangeInterface $timerange
