@@ -14,10 +14,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Support\Collection;
 use MathPHP\Exception\BadDataException;
 use MathPHP\Exception\OutOfBoundsException;
-use MathPHP\Statistics\Descriptive;
 
 abstract class Sla extends Model implements SlaInterface
 {
@@ -34,14 +32,14 @@ abstract class Sla extends Model implements SlaInterface
      */
     protected $fillable = [
         'sla_definition_id', 'type', 'error_margin_minutes',
-        'range_start', 'range_end', 'is_open'
+        'range_start', 'range_end', 'is_open', 'target_percent'
     ];
 
     /**
      * @var array|string[]|null
      */
     protected ?array $transformable = [
-        'id', 'sla_definition_id', 'type',
+        'id', 'sla_definition_id', 'type', 'target_percent',
         'range_start', 'range_end', 'achieved_at',
         'status', 'target_percent', 'is_open', 'error_margin_minutes',
         'achieved_progress_percent', 'last_progress_percent',
@@ -278,7 +276,7 @@ abstract class Sla extends Model implements SlaInterface
      */
     public function statistic(): HasOne
     {
-        return $this->hasOne(SlaStatistic::class, 'sla_id');
+        return $this->hasOne(static::sla_types()->{static::$type}->statistic, 'sla_id');
     }
 
     /**
@@ -330,7 +328,7 @@ abstract class Sla extends Model implements SlaInterface
     {
         /** @var SlaStatistic $statistic */
         if (is_null($this->statistic)) {
-            $statistic = $this->statistic()->create(['type' => $this->type]);
+            $statistic = $this->statistic()->create();
             $this->fresh();
         } else {
             $statistic = $this->statistic;

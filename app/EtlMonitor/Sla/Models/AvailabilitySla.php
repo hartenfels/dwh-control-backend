@@ -2,12 +2,9 @@
 
 namespace App\EtlMonitor\Sla\Models;
 
-use App\EtlMonitor\Sla\Models\DeliverableSlaProgress;
 use App\EtlMonitor\Sla\Models\Interfaces\SlaInterface;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * App\EtlMonitor\Sla\Models\DeliverableSla

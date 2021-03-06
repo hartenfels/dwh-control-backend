@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateSlaStatisticsTable extends Migration
+class CreateDeliverableSlaStatisticsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,10 +13,9 @@ class CreateSlaStatisticsTable extends Migration
      */
     public function up()
     {
-        Schema::create('etlmonitor_sla__sla_statistics', function (Blueprint $table) {
+        Schema::create('etlmonitor_sla__deliverable_sla_statistics', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('sla_id');
-            $table->string('type');
 
             $table->double('average_duration_minutes_lower')->nullable();
             $table->double('average_duration_minutes_upper')->nullable();
@@ -26,9 +25,8 @@ class CreateSlaStatisticsTable extends Migration
             $table->timestamps();
         });
 
-        Schema::table('etlmonitor_sla__sla_statistics', function (Blueprint $table) {
-            $table->foreign('sla_id', 'sla_statistics__sla_foreign')->references('id')->on('etlmonitor_sla__slas');
-            $table->index(['sla_id', 'type']);
+        Schema::table('etlmonitor_sla__deliverable_sla_statistics', function (Blueprint $table) {
+            $table->foreign('sla_id', 'deliverable_sla_statistics__sla_foreign')->references('id')->on('etlmonitor_sla__slas');
         });
     }
 
@@ -39,6 +37,6 @@ class CreateSlaStatisticsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('etlmonitor_sla__sla_statistics');
+        Schema::dropIfExists('etlmonitor_sla__deliverable_sla_statistics');
     }
 }

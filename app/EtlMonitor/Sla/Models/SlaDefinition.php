@@ -31,7 +31,7 @@ abstract class SlaDefinition extends Model implements SlaDefinitionInterface
      * @var string[]
      */
     protected $fillable = [
-        'name', 'type', 'status_id'
+        'name', 'type', 'status_id', 'target_percent'
     ];
 
     /**
@@ -112,7 +112,8 @@ abstract class SlaDefinition extends Model implements SlaDefinitionInterface
             'timerange_id' => $timerange->id,
             'range_start' => $timerange->start($time),
             'range_end' => $timerange->end($time),
-            'error_margin_minutes' => $timerange->error_margin_minutes
+            'error_margin_minutes' => $timerange->error_margin_minutes,
+            'target_percent' => $this->target_percent
         ]);
 
         return $sla;
