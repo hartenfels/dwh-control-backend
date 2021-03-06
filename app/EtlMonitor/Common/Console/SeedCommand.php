@@ -2,8 +2,11 @@
 
 namespace App\EtlMonitor\Common\Console;
 
+use App\EtlMonitor\Sla\Models\AvailabilitySla;
+use App\EtlMonitor\Sla\Models\AvailabilitySlaDefinition;
 use App\EtlMonitor\Sla\Models\DeliverableSla;
 use App\EtlMonitor\Sla\Models\DeliverableSlaDefinition;
+use App\EtlMonitor\Sla\Models\Interfaces\SlaDefinitionInterface;
 use App\EtlMonitor\Sla\Models\Interfaces\SlaInterface;
 use App\EtlMonitor\Sla\Services\SlaCreationService;
 use Carbon\Carbon;
@@ -33,16 +36,22 @@ class SeedCommand extends Command
         echo "Seeding demo data" . PHP_EOL;
 
         echo "Seeding SLA definitions" . PHP_EOL;
-        for ($i = 0; $i < (int)$this->option('definitions'); $i++) {
+        for ($i = 0; $i < (int)$this->option('definitions') / 2; $i++) {
             $f = Factory::create();
             DeliverableSlaDefinition::create([
+                'name' => $f->name,
+                'status_id' => random_int(1, 3)
+            ]);
+
+            $f = Factory::create();
+            AvailabilitySlaDefinition::create([
                 'name' => $f->name,
                 'status_id' => random_int(1, 3)
             ]);
         }
 
         echo "Seeding timeranges" . PHP_EOL;
-        DeliverableSlaDefinition::all()->each(function (DeliverableSlaDefinition $d) {
+        DeliverableSlaDefinition::all()->merge(AvailabilitySlaDefinition::all())->each(function (SlaDefinitionInterface $d) {
             for ($i = 1; $i <= 7; $i++) {
                 $f = Factory::create();
                 $d->daily_timeranges()->create([
@@ -55,7 +64,7 @@ class SeedCommand extends Command
         });
 
         echo "Creating SLAs" . PHP_EOL;
-        DeliverableSlaDefinition::all()->each(function (DeliverableSlaDefinition $d) {
+        DeliverableSlaDefinition::all()->merge(AvailabilitySlaDefinition::all())->each(function (SlaDefinitionInterface $d) {
             foreach (CarbonPeriod::create(Carbon::today()->subWeeks(6)->startOfWeek(), Carbon::today()) as $day) {
                 SlaCreationService::make($d, $day)->invoke()->each(function (SlaInterface $sla) use ($day) {
                     $f = Factory::create();
@@ -73,6 +82,14 @@ class SeedCommand extends Command
         DeliverableSla::get()->each(function (DeliverableSla $sla) {
             $sla->updateProgress();
             $sla->fresh();
+            $sla->calculateStatistics();
+        });
+        AvailabilitySla::get()->each(function (AvailabilitySla $sla) {
+            $sla->fresh();
+            $sla->calculateStatistics();
+        });
+
+        DeliverableSlaDefinition::get()->merge(AvailabilitySlaDefinition::all())->each(function (SlaDefinitionInterface $sla) {
             $sla->calculateStatistics();
         });
 

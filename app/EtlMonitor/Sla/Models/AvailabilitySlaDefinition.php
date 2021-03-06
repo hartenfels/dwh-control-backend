@@ -32,26 +32,26 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @method static \Illuminate\Database\Eloquent\Builder|DeliverableSlaDefinition whereUpdatedAt($value)
  * @mixin \Eloquent
  */
-class DeliverableSlaDefinition extends SlaDefinition
+class AvailabilitySlaDefinition extends SlaDefinition
 {
 
     /**
      * @var string[]
      */
     protected $attributes = [
-        'type' => 'deliverable'
+        'type' => 'availability'
     ];
 
     /**
      * @var string
      */
-    protected static string $type = 'deliverable';
+    protected static string $type = 'availability';
 
     /**
      * @return string
      */
     public function getIcon(): string
     {
-        return 'mdi-truck-check-outline';
+        return 'mdi-clipboard-pulse-outline';
     }
 }

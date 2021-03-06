@@ -9,3 +9,7 @@ Route::middleware('api')->prefix('api/v1/common')->group(function () {
     Route::get('files/{file}/display/{name?}', 'App\EtlMonitor\Common\Http\Controllers\\FileController@display');
     Route::put('alerts/acknowledge', 'App\EtlMonitor\Common\Http\Controllers\\AlertController@acknowledge');
 });
+
+Route::middleware('api')->prefix('api/v1')->group(function () {
+    Route::get('_autocomplete/{text}', '\App\EtlMonitor\Common\Http\Controllers\SearchController@autocomplete');
+});

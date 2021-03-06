@@ -11,8 +11,11 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
+use MathPHP\Exception\BadDataException;
+use MathPHP\Exception\OutOfBoundsException;
 
 abstract class SlaDefinition extends Model implements SlaDefinitionInterface
 {
@@ -35,7 +38,7 @@ abstract class SlaDefinition extends Model implements SlaDefinitionInterface
      * @var string[]
      */
     protected $with = [
-        'status'
+        'status', 'statistic'
     ];
 
     /**
@@ -65,6 +68,34 @@ abstract class SlaDefinition extends Model implements SlaDefinitionInterface
     public function timeranges(): Collection
     {
         return $this->daily_timeranges()->get();
+    }
+
+    /**
+     * @return HasOne
+     */
+    public function statistic(): HasOne
+    {
+        return $this->hasOne(SlaDefinitionStatistic::class, 'sla_definition_id');
+    }
+
+    /**
+     * @return $this
+     * @throws BadDataException
+     * @throws OutOfBoundsException
+     */
+    public function calculateStatistics(): self
+    {
+        /** @var SlaStatistic $statistic */
+        if (is_null($this->statistic)) {
+            $statistic = $this->statistic()->create(['type' => $this->type]);
+            $this->fresh();
+        } else {
+            $statistic = $this->statistic;
+        }
+
+        $statistic->calculate();
+
+        return $this;
     }
 
     /**

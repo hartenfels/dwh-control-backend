@@ -4,19 +4,19 @@ namespace App\EtlMonitor\Sla\Services;
 
 use App\EtlMonitor\Common\Services\Service;
 use App\EtlMonitor\Sla\Exceptions\InvalidSlaDefinitionTypeException;
-use App\EtlMonitor\Sla\Models\AvailabilitySlaDefinition;
-use App\EtlMonitor\Sla\Models\DeliverableSlaDefinition;
-use App\EtlMonitor\Sla\Models\Interfaces\SlaDefinitionInterface;
+use App\EtlMonitor\Sla\Models\AvailabilitySla;
+use App\EtlMonitor\Sla\Models\DeliverableSla;
+use App\EtlMonitor\Sla\Models\Interfaces\SlaInterface;
 
-class SlaDefinitionRetrievalService extends Service
+class SlaRetrievalService extends Service
 {
 
     /**
      * @var string[]
      */
     private $valid_types = [
-        'deliverable' => DeliverableSlaDefinition::class,
-        'availability' => AvailabilitySlaDefinition::class
+        'deliverable' => DeliverableSla::class,
+        'availability' => AvailabilitySla::class
     ];
 
     /**
@@ -28,10 +28,10 @@ class SlaDefinitionRetrievalService extends Service
     {}
 
     /**
-     * @return SlaDefinitionInterface
+     * @return SlaInterface
      * @throws InvalidSlaDefinitionTypeException
      */
-    public function __invoke(): SlaDefinitionInterface
+    public function __invoke(): SlaInterface
     {
         if (!in_array($this->type, array_keys($this->valid_types))) {
             throw new InvalidSlaDefinitionTypeException($this->type);
