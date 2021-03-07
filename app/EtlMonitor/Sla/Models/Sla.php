@@ -374,6 +374,11 @@ abstract class Sla extends Model implements SlaInterface
     public static function boot()
     {
         parent::boot();
+
+        static::addGlobalScope('type', function (Builder $builder) {
+            $builder->where('type', static::$type);
+        });
+
         self::deleting(function ($sla) {
             $sla->progress->each(function ($progress) { $progress->delete(); });
         });

@@ -9,7 +9,9 @@ use App\EtlMonitor\Api\Traits\UsesDefaultIndexMethodTrait;
 use App\EtlMonitor\Api\Traits\UsesDefaultShowMethodTrait;
 use App\EtlMonitor\Api\Traits\UsesDefaultStoreMethodTrait;
 use App\EtlMonitor\Api\Traits\UsesDefaultUpdateMethodTrait;
+use App\EtlMonitor\Sla\Models\AvailabilitySlaDefinition;
 use App\EtlMonitor\Sla\Models\DeliverableSlaDefinition;
+use App\EtlMonitor\Sla\Models\Interfaces\SlaDefinitionInterface;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
 
@@ -35,10 +37,12 @@ class SearchController extends Controller
         $sla_definition_collection = new Collection();
 
         /** @var Collection<DeliverableSlaDefinition> $definitions */
-        $definitions = DeliverableSlaDefinition::where('name', 'like', $sql_filter)->limit(5)->get();
-        $definitions->each(function (DeliverableSlaDefinition $d) use (&$sla_definition_collection) {
+        $definitions = DeliverableSlaDefinition::where('name', 'like', $sql_filter)->limit(5)->get()
+            ->merge(AvailabilitySlaDefinition::where('name', 'like', $sql_filter)->limit(5)->get());
+        $definitions->each(function (SlaDefinitionInterface $d) use (&$sla_definition_collection) {
             $sla_definition_collection->add((object)[
                 'id' => $d->id,
+                'type' => $d->type,
                 'name' => $d->name,
                 'info' => $d->statistic,
                 'model' => $d->model(),

@@ -4,6 +4,7 @@ namespace App\EtlMonitor\Sla\Models;
 
 use App\EtlMonitor\Common\Models\Model;
 use App\EtlMonitor\Sla\Models\Interfaces\SlaProgressInterface;
+use Illuminate\Database\Eloquent\Builder;
 
 abstract class SlaProgress extends Model implements SlaProgressInterface
 {
@@ -38,6 +39,18 @@ abstract class SlaProgress extends Model implements SlaProgressInterface
         $this->is_override = true;
 
         return $this;
+    }
+
+    /**
+     *
+     */
+    public static function boot()
+    {
+        parent::boot();
+
+        static::addGlobalScope('type', function (Builder $builder) {
+            $builder->where('type', static::$type);
+        });
     }
 
 }

@@ -162,6 +162,11 @@ abstract class SlaDefinition extends Model implements SlaDefinitionInterface
     public static function boot()
     {
         parent::boot();
+
+        static::addGlobalScope('type', function (Builder $builder) {
+            $builder->where('type', static::$type);
+        });
+
         self::deleting(function ($definition) {
             $definition->timeranges()->each(function ($timerange) { $timerange->delete(); });
             $definition->slas->each(function ($sla) { $sla->delete(); });
