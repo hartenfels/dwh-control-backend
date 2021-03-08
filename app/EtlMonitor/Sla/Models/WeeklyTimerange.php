@@ -32,20 +32,20 @@ use Carbon\CarbonInterface;
  * @method static \Illuminate\Database\Eloquent\Builder|DailyTimerange whereUpdatedAt($value)
  * @mixin \Eloquent
  */
-class DailyTimerange extends Timerange
+class WeeklyTimerange extends Timerange
 {
 
     /**
      * @var string[]
      */
     protected $attributes = [
-        'type' => 'daily'
+        'type' => 'weekly'
     ];
 
     /**
      * @var string
      */
-    protected static string $type = 'daily';
+    protected static string $type = 'weekly';
 
     /**
      * @param CarbonInterface|null $time
@@ -53,9 +53,9 @@ class DailyTimerange extends Timerange
      */
     public function start(CarbonInterface $time = null): CarbonInterface
     {
-        $t = $time ? clone $time : Carbon::now();
-        $t->startOfWeek()->addDays((int)$this->anchor - 1); // Set to week day
-        $t->setTimeFromTimeString($this->range_start); // Set time
+        $t = ($time ? clone $time : Carbon::now())->startOfWeek();
+        list($hours, $minutes) = explode(':', $this->range_start);
+        $t->addHours($hours)->addMInutes($minutes); // Set time
 
         return $t;
     }
@@ -66,9 +66,9 @@ class DailyTimerange extends Timerange
      */
     public function end(CarbonInterface $time = null): CarbonInterface
     {
-        $t = $time ? clone $time : Carbon::now();
-        $t->startOfWeek()->addDays((int)$this->anchor - 1); // Set to week day
-        $t->setTimeFromTimeString($this->range_end); // Set time
+        $t = ($time ? clone $time : Carbon::now())->startOfWeek();
+        list($hours, $minutes) = explode(':', $this->range_end);
+        $t->addHours($hours)->addMInutes($minutes); // Set time
 
         return $t;
     }
@@ -80,7 +80,7 @@ class DailyTimerange extends Timerange
     public function instanceIdentifier(CarbonInterface $time = null): string
     {
         $time = is_null($time) ? Carbon::now() : clone $time;
-        return $this->start($time)->startOfDay()->format('Y-m-d\TH:i:s\Z');
+        return $this->start($time)->startOfWeek()->format('Y-m-d\TH:i:s\Z');
     }
 
     /**
@@ -89,7 +89,7 @@ class DailyTimerange extends Timerange
      */
     public function instanceIdentifierForSla(SlaInterface $sla): string
     {
-        $time = (clone $sla->range_start)->startOfDay();
+        $time = (clone $sla->range_start)->startOfWeek();
         return $time->format('Y-m-d\TH:i:s\Z');
     }
 

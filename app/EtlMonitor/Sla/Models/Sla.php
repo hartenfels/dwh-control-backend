@@ -31,7 +31,7 @@ abstract class Sla extends Model implements SlaInterface
      * @var string[]
      */
     protected $fillable = [
-        'sla_definition_id', 'type', 'error_margin_minutes',
+        'sla_definition_id', 'timerange_id', 'type', 'timerange_type', 'error_margin_minutes',
         'range_start', 'range_end', 'is_open', 'target_percent'
     ];
 
@@ -39,8 +39,8 @@ abstract class Sla extends Model implements SlaInterface
      * @var array|string[]|null
      */
     protected ?array $transformable = [
-        'id', 'sla_definition_id', 'type', 'target_percent',
-        'range_start', 'range_end', 'achieved_at',
+        'id', 'sla_definition_id', 'timerange_id', 'type', 'timerange_type',
+        'target_percent', 'range_start', 'range_end', 'achieved_at',
         'status', 'target_percent', 'is_open', 'error_margin_minutes',
         'achieved_progress_percent', 'last_progress_percent',
         'progress_last_intime_id', 'progress_first_intime_achieved_id',
@@ -134,7 +134,15 @@ abstract class Sla extends Model implements SlaInterface
             ->where('time', '<=', $this->range_end)
             ->where('progress_percent', '>=', $this->target_percent)
             ->orderBy('is_override', 'desc')
-            ->orderBy('time', 'asc')
+            ->orderBy('time')
+            ->first();
+
+        /** @var SlaProgressInterface $progress_best_in_time */
+        $progress_best_in_time = $this->progress()
+            ->where('time', '>=', $this->range_start)
+            ->where('time', '<=', $this->range_end)
+            ->orderBy('is_override', 'desc')
+            ->orderBy('progress_percent', 'desc')
             ->first();
 
         /** @var SlaProgressInterface $progress_late */
@@ -153,7 +161,7 @@ abstract class Sla extends Model implements SlaInterface
             ->first();
 
 
-        $this->setProgressIntime($progress_intime, $progress_first_achieved_in_time)
+        $this->setProgressIntime($progress_intime, $progress_first_achieved_in_time, $progress_best_in_time)
             ->setProgressLate($progress_late, $progress_first_achieved_late)
             ->save();
 
@@ -165,12 +173,18 @@ abstract class Sla extends Model implements SlaInterface
     /**
      * @param SlaProgressInterface|null $progress
      * @param SlaProgressInterface|null $progress_first_achieved
+     * @param SlaProgressInterface|null $progress_best_in_time
      * @return $this
      */
-    public function setProgressIntime(SlaProgressInterface $progress = null, SlaProgressInterface $progress_first_achieved = null): self
+    public function setProgressIntime(
+        SlaProgressInterface $progress = null,
+        SlaProgressInterface $progress_first_achieved = null,
+        SlaProgressInterface $progress_best_in_time = null
+    ): self
     {
         $this->progress_last_intime()->associate($progress);
         $this->progress_first_intime_achieved()->associate($progress_first_achieved);
+        $this->progress_best_intime()->associate($progress_best_in_time);
 
         return $this;
     }
@@ -219,12 +233,13 @@ abstract class Sla extends Model implements SlaInterface
     }
 
     /**
-     * @return SlaInterface
+     * @param SlaProgressInterface|null $progress_last_intime
+     * @return Sla
      */
-    public function setWaiting(): self
+    public function setWaiting(SlaProgressInterface $progress_last_intime = null): self
     {
         $this->status = 'waiting';
-        $this->achieved_progress_percent = null;
+        $this->achieved_progress_percent = $progress_last_intime?->progress_percent;
         $this->last_progress_percent = null;
         $this->achieved_at = null;
 
@@ -306,6 +321,14 @@ abstract class Sla extends Model implements SlaInterface
     /**
      * @return belongsTo
      */
+    public function progress_best_intime(): belongsTo
+    {
+        return $this->belongsTo(static::sla_types()->{static::$type}->progress, 'progress_best_intime_id');
+    }
+
+    /**
+     * @return belongsTo
+     */
     public function progress_last_late(): belongsTo
     {
         return $this->belongsTo(static::sla_types()->{static::$type}->progress, 'progress_last_late_id');
@@ -380,7 +403,8 @@ abstract class Sla extends Model implements SlaInterface
         });
 
         self::deleting(function ($sla) {
-            $sla->progress->each(function ($progress) { $progress->delete(); });
+            $sla->progress->each(function (SlaProgressInterface $progress) { $progress->delete(); });
+            $sla->statistic->delete();
         });
     }
 

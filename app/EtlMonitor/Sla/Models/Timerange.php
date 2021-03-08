@@ -3,6 +3,7 @@
 namespace App\EtlMonitor\Sla\Models;
 
 use App\EtlMonitor\Common\Models\Model;
+use App\EtlMonitor\Sla\Models\Interfaces\SlaInterface;
 use App\EtlMonitor\Sla\Models\Interfaces\TimerangeInterface;
 use App\EtlMonitor\Sla\Traits\TimerangeTypes;
 use Carbon\Carbon;
@@ -47,6 +48,16 @@ abstract class Timerange extends Model implements TimerangeInterface
     public function startsOn(CarbonInterface $day): bool
     {
         return $this->start($day)->isSameDay($day);
+    }
+
+
+    /**
+     * @param SlaInterface $sla
+     * @return bool
+     */
+    public function matchesSla(SlaInterface $sla): bool
+    {
+        return $this->instanceIdentifier($sla->range_start) == $this->instanceIdentifierForSla($sla);
     }
 
     /**

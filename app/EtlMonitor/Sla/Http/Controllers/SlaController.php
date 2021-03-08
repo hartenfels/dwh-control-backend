@@ -36,18 +36,22 @@ class SlaController extends Controller
     {
         $this->auth();
 
-        $start = Carbon::parse($start);
-        $end = Carbon::parse($end);
+        $start = Carbon::parse($start)->format('c');
+        $end = Carbon::parse($end)->format('c');
 
-        $query = DB::table('etlmonitor_sla__slas')->where(function (Builder $builder) use ($start, $end) {
-            return $builder->where(function (Builder $b) use ($start) {
+        $query = DB::table('etlmonitor_sla__slas')->orWhere(function (Builder $b) use ($start) {
+                // Start withing range
                 return $b->where('range_start', '<=', $start)
-                    ->where('range_end', '>=', $start);
+                         ->where('range_end', '>=', $start);
             })->orWhere(function (Builder $b) use ($end) {
+                // End within range
                 return $b->where('range_start', '<=', $end)
-                    ->where('range_end', '>=', $end);
+                         ->where('range_end', '>=', $end);
+            })->orWhere(function (Builder $b) use ($start, $end) {
+                // Start and end within range
+                return $b->where('range_start', '>=', $start)
+                         ->where('range_end', '<=', $end);
             });
-        });
 
         $model_retrieval_service = function ($result) {
             return SlaRetrievalService::make($result->type, $result->id)->invoke();

@@ -57,41 +57,6 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model implements Mode
     public function delete()
     {
         $this->properties()->delete();
-        $this->history()->delete();
-
-        foreach (static::getRelationNames() as $name => $relation) {
-            dump($relation, $name);
-            switch ($relation) {
-                case 'BelongsTo':
-                case 'MorphTo':
-                    $this->$name()->dissociate();
-                    break;
-
-                case 'BelongsToMany':
-                case 'MorphedByMany':
-                case 'MorphToMany':
-                    $this->$name()->detach();
-                    break;
-
-                case 'HasMany':
-                    $fk = $this->$name()->getForeignKeyName();
-                    $this->$name->each(function (Model $m) use ($fk) {
-                        $m->$fk = null;
-                        $m->save();
-                    });
-                    break;
-
-                case 'MorphMany':
-                    $fk = $this->$name()->getForeignKeyName();
-                    $ft = $this->$name()->getMorphType();
-                    $this->$name->each(function (Model $m) use ($fk, $ft) {
-                        $m->$fk = null;
-                        $m->$ft = null;
-                        $m->save();
-                    });
-                    break;
-            }
-        }
 
         return parent::delete();
     }

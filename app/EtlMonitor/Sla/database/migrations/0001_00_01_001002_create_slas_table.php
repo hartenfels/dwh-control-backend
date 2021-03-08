@@ -16,12 +16,13 @@ class CreateSlasTable extends Migration
         Schema::create('etlmonitor_sla__slas', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('sla_definition_id')->unsigned();
+            $table->unsignedBigInteger('timerange_id')->unsigned();
             $table->string('type');
 
+            $table->string('timerange_type');
             $table->timestamp('range_start');
             $table->timestamp('range_end');
             $table->timestamp('achieved_at')->nullable();
-
             $table->integer('error_margin_minutes');
 
             $table->boolean('is_open')->nullable()->default(true);
@@ -31,6 +32,7 @@ class CreateSlasTable extends Migration
             $table->double('achieved_progress_percent')->nullable();
             $table->double('last_progress_percent')->nullable();
 
+            $table->integer('progress_best_intime_id')->nullable();
             $table->integer('progress_last_intime_id')->nullable();
             $table->integer('progress_first_intime_achieved_id')->nullable();
             $table->integer('progress_last_late_id')->nullable();
@@ -41,6 +43,7 @@ class CreateSlasTable extends Migration
 
         Schema::table('etlmonitor_sla__slas', function (Blueprint $table) {
             $table->foreign('sla_definition_id', 'sla__definition_foreign')->references('id')->on('etlmonitor_sla__sla_definitions');
+            $table->foreign('timerange_id', 'sla__timerange_foreign')->references('id')->on('etlmonitor_sla__timeranges');
             $table->index(['sla_definition_id', 'type']);
         });
     }

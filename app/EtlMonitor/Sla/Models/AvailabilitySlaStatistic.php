@@ -2,10 +2,12 @@
 
 namespace App\EtlMonitor\Sla\Models;
 
+use App\EtlMonitor\Sla\Models\Interfaces\SlaInterface;
 use App\EtlMonitor\Sla\Models\Interfaces\SlaProgressInterface;
 use App\EtlMonitor\Sla\Traits\SlaTypes;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Collection;
 
 class AvailabilitySlaStatistic extends SlaStatistic
 {
@@ -16,7 +18,7 @@ class AvailabilitySlaStatistic extends SlaStatistic
      * @var string[]
      */
     protected $fillable = [
-        'sla_id', 'progress_history'
+        'sla_id', 'progress_history', 'achievement_history'
     ];
 
     /**
@@ -24,6 +26,7 @@ class AvailabilitySlaStatistic extends SlaStatistic
      */
     protected $casts = [
         'progress_history' => 'array',
+        'achievement_history' => 'array'
     ];
 
     /**
@@ -32,6 +35,7 @@ class AvailabilitySlaStatistic extends SlaStatistic
     public function calculate(): self
     {
         $this->calculateProgress();
+        $this->calculateHistory();
 
         return $this;
     }
@@ -46,13 +50,44 @@ class AvailabilitySlaStatistic extends SlaStatistic
         $cursor = $this->sla->range_start;
         $progress = $this->sla->progress()->orderBy('time', 'desc')->get();
         $progress_history = [];
+        $bucket_size = config('etl_monitor.availability_sla_progress_history_bucket_size_min', 30);
 
         do {
             $progress_history[] = $progress->filter(fn(SlaProgressInterface $p) => $p->time->lt($cursor))->first()?->progress_percent;
-        } while($cursor->addMinutes(config('etl_monitor.availability_sla_progress_history_bucket_size_min', 60))->lt($this->sla->range_end));
+        } while($cursor->addMinutes($bucket_size)->lt(clone($this->sla->range_end)->addMinutes($bucket_size)));
 
 
         $this->progress_history = $progress_history;
+
+        if ($save) $this->save();
+
+        return $this;
+    }
+
+    /**
+     * @param int $days
+     * @param bool $save
+     * @return $this
+     */
+    public function calculateHistory(int $days = 14, bool $save = true): self
+    {
+        /** @var Collection<SlaInterface> $slas */
+        $slas = AvailabilitySla::where('type', $this->sla->type)
+            ->where('sla_definition_id', $this->sla->sla_definition_id)
+            ->where('range_start', '<', $this->sla->range_start)
+            ->where('range_start', '>', (clone $this->sla->range_start)->subDays($days)->startOfDay())
+            ->orderBy('range_start', 'desc')
+            ->get();
+
+        $this->achievement_history = $slas->reverse()->map(function (SlaInterface $sla) {
+            return [
+                'sla_id' => $sla->id,
+                'day' => $sla->range_end,
+                'status' => $sla->status,
+                'achieved_percent' => $sla->achieved_progress_percent,
+                'target_percent' => $sla->target_percent
+            ];
+        })->values()->sortBy('start');
 
         if ($save) $this->save();
 

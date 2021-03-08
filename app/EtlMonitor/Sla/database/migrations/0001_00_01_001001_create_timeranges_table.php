@@ -18,7 +18,7 @@ class CreateTimerangesTable extends Migration
             $table->unsignedBigInteger('sla_definition_id');
             $table->string('type');
 
-            $table->integer('anchor');
+            $table->integer('anchor')->default(0);
             $table->string('range_start');
             $table->string('range_end');
 

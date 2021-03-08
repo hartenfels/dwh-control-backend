@@ -59,7 +59,15 @@ abstract class SlaDefinition extends Model implements SlaDefinitionInterface
      */
     public function daily_timeranges(): HasMany
     {
-        return $this->hasMany(DailyTimerange::class, 'sla_definition_id', 'id');
+        return $this->hasMany(DailyTimerange::class, 'sla_definition_id', 'id')->where('type', 'daily');
+    }
+
+    /**
+     * @return HasMany
+     */
+    public function weekly_timeranges(): HasMany
+    {
+        return $this->hasMany(WeeklyTimerange::class, 'sla_definition_id', 'id')->where('type', 'weekly');
     }
 
     /**
@@ -67,7 +75,7 @@ abstract class SlaDefinition extends Model implements SlaDefinitionInterface
      */
     public function timeranges(): Collection
     {
-        return $this->daily_timeranges()->get();
+        return $this->daily_timeranges->merge($this->weekly_timeranges);
     }
 
     /**
@@ -110,6 +118,7 @@ abstract class SlaDefinition extends Model implements SlaDefinitionInterface
         /** @var SlaInterface $sla */
         $sla = $this->slas()->create([
             'timerange_id' => $timerange->id,
+            'timerange_type' => $timerange->type,
             'range_start' => $timerange->start($time),
             'range_end' => $timerange->end($time),
             'error_margin_minutes' => $timerange->error_margin_minutes,

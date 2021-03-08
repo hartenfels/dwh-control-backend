@@ -21,6 +21,11 @@ interface SlaDefinitionInterface extends ModelInterface
     public function daily_timeranges(): HasMany;
 
     /**
+     * @return HasMany
+     */
+    public function weekly_timeranges(): HasMany;
+
+    /**
      * @param TimerangeInterface $timerange
      * @param Carbon|null $time
      * @return SlaInterface

@@ -18,6 +18,7 @@ class CreateAvailabilitySlaStatisticsTable extends Migration
             $table->unsignedBigInteger('sla_id');
 
             $table->json('progress_history')->nullable();
+            $table->json('achievement_history')->nullable();
 
             $table->timestamps();
         });

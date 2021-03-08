@@ -202,7 +202,7 @@ class Controller extends \App\Http\Controllers\Controller
     public function paginateModels(EloquentBuilder|QueryBuilder $query): LengthAwarePaginator
     {
         if ($this->request->has('per_page')) {
-            $perPage = ($pp = $this->request->get('per_page')) == -1 ? $query->count() : $pp;
+            $perPage = ($pp = (int)$this->request->get('per_page')) == -1 ? $query->count() : $pp;
         } else {
             $perPage = config('pagination_per_page');
         }

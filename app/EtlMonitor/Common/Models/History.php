@@ -58,9 +58,9 @@ class History extends Model
     }
 
     /**
-     * @return Collection
+     * @return array
      */
-    public function transform(): Collection
+    public function transform(): array
     {
         $params = explode('||', $this->params);
         $params = array_map(function ($param) {

@@ -93,33 +93,18 @@ class AvailabilitySla extends Sla
     {
         $time = $time ?? Carbon::now();
 
-        $has_progress_in_time = !is_null($this->progress_last_intime);
-        $has_achieved_in_time = !is_null($this->progress_first_intime_achieved);
-        $has_progress_late = !is_null($this->progress_last_late);
-        $has_achieved_late = !is_null($this->progress_first_late_achieved);
-
         if ($this->range_start->gt($time)) {
             $this->setWaiting()->save();
             return $this;
         }
 
-        if ($has_achieved_in_time) {
-            $this->setAchieved($this->progress_first_intime_achieved)->setClosed()->save();
-            return $this;
-        }
-
-        if ($has_achieved_late) {
-            $this->setFailed($this->progress_last_intime, $this->progress_last_late, $this->progress_first_late_achieved)->setClosed()->save();
-            return $this;
-        }
-
-        if ($has_progress_in_time && $this->range_end->lte($time)) {
-            $this->setFailed($this->progress_last_intime)->setClosed()->save();
+        if ($this->progress_last_intime?->progress_percent >= $this->target_percent) {
+            $this->setAchieved($this->progress_last_intime)->setClosed()->save();
             return $this;
         }
 
         if ($this->range_end->lte($time)) {
-            $this->setFailed()->setClosed()->save();
+            $this->setFailed($this->progress_last_intime)->setClosed()->save();
             return $this;
         }
 
@@ -127,7 +112,7 @@ class AvailabilitySla extends Sla
             $this->setLate()->save();
         }
 
-        $this->setWaiting()->save();
+        $this->setWaiting($this->progress_last_intime)->save();
         return $this;
     }
 }
