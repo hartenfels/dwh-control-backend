@@ -2,6 +2,9 @@
 
 namespace App\EtlMonitor\Common\Console;
 
+use App\EtlMonitor\Etl\Models\AutomicEtlDefinition;
+use App\EtlMonitor\Etl\Models\AutomicEtlExecution;
+use App\EtlMonitor\Etl\Models\Interfaces\EtlDefinitionInterface;
 use App\EtlMonitor\Sla\Models\AvailabilitySla;
 use App\EtlMonitor\Sla\Models\AvailabilitySlaDefinition;
 use App\EtlMonitor\Sla\Models\DeliverableSla;
@@ -15,6 +18,7 @@ use Carbon\CarbonPeriod;
 use Exception;
 use Faker\Factory;
 use Illuminate\Console\Command;
+use Illuminate\Support\Collection;
 
 class SeedCommand extends Command
 {
@@ -22,7 +26,7 @@ class SeedCommand extends Command
     /**
      * @var string
      */
-    protected $signature = 'etl_monitor:seed {--definitions=10}';
+    protected $signature = 'etl_monitor:seed {--etl_definitions=40} {--sla_definitions=10}';
 
     /**
      * @var string
@@ -36,18 +40,78 @@ class SeedCommand extends Command
     {
         echo "Seeding demo data" . PHP_EOL;
 
+        echo "Seeding ETL definitions" . PHP_EOL;
+        $definitions_tiers = [0 => [], 1 => [], 2 => [], 3 => []];
+        for ($i = 0; $i < 4; $i++) {
+            for ($j = 0; $j < (int)$this->option('etl_definitions')/4; $j++) {
+                $f = Factory::create();
+                $definitions_tiers[$i][] = AutomicEtlDefinition::create([
+                    'name' => $f->domainName,
+                    'etl_id' => $f->domainName . '/' . $f->domainWord
+                ]);
+            }
+        }
+
+        echo "Seeding ETL executions" . PHP_EOL;
+        foreach (CarbonPeriod::create(Carbon::today()->subWeeks(6)->startOfWeek(), Carbon::today()) as $day) {
+            $prev_tier_executions = [];
+            $executions = [];
+            collect($definitions_tiers)->each(function (array $definitions, $tier) use (&$prev_tier_executions, &$executions, $day) {
+                collect($definitions)->each(function (EtlDefinitionInterface $definition) use (&$prev_tier_executions, &$executions, $tier, $day) {
+                    $s = (clone $day)->addHours(random_int($tier, $tier + 0.1));
+                    $e = (clone $s)->addHours(random_int($tier + 0.9, $tier + 1));
+                    $runtime = random_int(1, 10) > 8 ? rand(-3, 3) : null;
+                    $datasets = random_int(1, 10) > 8 ? rand(-3, 3) : null;
+                    $run_id = random_int(1000000, 8000000);
+
+                    $exec = AutomicEtlExecution::create([
+                        'idnr' => $run_id,
+                        'etl_id' => $definition->etl_id,
+                        'name' => $definition->name,
+                        'alias' => $definition->name,
+                        'status' => random_int(1800, 1999),
+                        'date' => [
+                            'activation' => $s->format('c'),
+                            'start' => $s->format('c'),
+                            'end' => $e->format('c'),
+                            'end_pp' => $e->format('c'),
+                        ],
+                        'anomaly' => [
+                            'runtime' => $runtime,
+                            'datasets' => $datasets
+                        ]
+                    ], [
+                        '_id' => '500-' . $run_id
+                    ]);
+
+                    if ($cnt = count($prev_tier_executions) > 0) {
+                        $exec->predecessor_id = $prev_tier_executions[random_int(0, $cnt - 1)]->getId();
+                        $exec->save();
+                    }
+                    $executions[] = $exec;
+                });
+
+                $prev_tier_executions = $executions;
+            });
+        }
+
+        echo "Calculating ETL statistics" . PHP_EOL;
+        AutomicEtlDefinition::all()->each(function (AutomicEtlDefinition $definition) {
+            $definition->calculateStatistic();
+        });
+
         echo "Seeding SLA definitions" . PHP_EOL;
-        for ($i = 0; $i < (int)$this->option('definitions') / 2; $i++) {
+        for ($i = 0; $i < (int)$this->option('sla_definitions') / 2; $i++) {
             $f = Factory::create();
             DeliverableSlaDefinition::create([
                 'name' => $f->name,
-                'status_id' => random_int(1, 3)
+                'lifecycle_id' => random_int(1, 3)
             ]);
 
             $f = Factory::create();
             AvailabilitySlaDefinition::create([
                 'name' => $f->name,
-                'status_id' => random_int(1, 3),
+                'lifecycle_id' => random_int(1, 3),
                 'target_percent' => random_int(80, 100)
             ]);
         }

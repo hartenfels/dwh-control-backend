@@ -2,7 +2,7 @@
 
 namespace App\EtlMonitor\Sla\Models\Interfaces;
 
-use App\EtlMonitor\Common\Models\ModelInterface;
+use App\EtlMonitor\Common\Models\Interfaces\ModelInterface;
 use Carbon\CarbonInterface;
 
 /**

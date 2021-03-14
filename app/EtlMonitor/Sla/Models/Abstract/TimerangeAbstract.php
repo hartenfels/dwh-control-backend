@@ -1,6 +1,6 @@
 <?php
 
-namespace App\EtlMonitor\Sla\Models;
+namespace App\EtlMonitor\Sla\Models\Abstract;
 
 use App\EtlMonitor\Common\Models\Model;
 use App\EtlMonitor\Sla\Models\Interfaces\SlaInterface;
@@ -9,7 +9,7 @@ use App\EtlMonitor\Sla\Traits\TimerangeTypes;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 
-abstract class Timerange extends Model implements TimerangeInterface
+abstract class TimerangeAbstract extends Model implements TimerangeInterface
 {
 
     use TimerangeTypes;

@@ -11,6 +11,7 @@ use App\EtlMonitor\Api\Http\Controllers\Actions\UpdateAction;
 use App\EtlMonitor\Api\Http\Requests\Request;
 use App\EtlMonitor\Common\Enum\HttpStatusCodeEnum;
 use App\EtlMonitor\Common\Exceptions\ModelNotFoundException;
+use App\EtlMonitor\Common\Models\ElasticsearchModel;
 use App\EtlMonitor\Common\Models\Model;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\Access\Response;
@@ -220,10 +221,10 @@ class Controller extends \App\Http\Controllers\Controller
     }
 
     /**
-     * @param array $model_transformed
+     * @param Collection|array $model_transformed
      * @return Collection
      */
-    protected function getSeparateModelsFromRelations(array $model_transformed): Collection
+    protected function getSeparateModelsFromRelations(Collection|array $model_transformed): Collection
     {
         $models = new Collection();
         foreach ($model_transformed['relations'] as $name => $related_models) {
@@ -289,8 +290,8 @@ class Controller extends \App\Http\Controllers\Controller
      */
     public function respondWithModels(Collection $models): JsonResponse
     {
-        $transformed = $models->map(function (Model $model) {
-            return $model->enrich()->transform();
+        $transformed = $models->map(function (Model|ElasticsearchModel $model) {
+            return collect($model->enrich()->transform());
         });
 
         if ($this->request->get('relations') == 'separate') {
@@ -298,7 +299,7 @@ class Controller extends \App\Http\Controllers\Controller
                 if (!isset($t['relations'])) continue;
                 $transformed = $transformed->merge($this->getSeparateModelsFromRelations($t));
 
-                $transformed = $transformed->map(function (array $model) {
+                $transformed = $transformed->map(function (Collection|array $model) {
                     unset($model['relations']);
                     return $model;
                 });

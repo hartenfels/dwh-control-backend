@@ -2,6 +2,7 @@
 
 namespace App\EtlMonitor\Sla\Models;
 
+use App\EtlMonitor\Sla\Models\Abstract\TimerangeAbstract;
 use App\EtlMonitor\Sla\Models\Interfaces\SlaInterface;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
@@ -32,7 +33,7 @@ use Carbon\CarbonInterface;
  * @method static \Illuminate\Database\Eloquent\Builder|DailyTimerange whereUpdatedAt($value)
  * @mixin \Eloquent
  */
-class DailyTimerange extends Timerange
+class DailyTimerange extends TimerangeAbstract
 {
 
     /**

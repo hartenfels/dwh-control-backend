@@ -7,6 +7,7 @@ use App\EtlMonitor\Common\Enum\DatabaseDataTypesEnum;
 use App\EtlMonitor\Common\Enum\PropertyTypesEnum;
 use App\EtlMonitor\Common\Events\FrontendModelUpdateRequestEvent;
 use App\EtlMonitor\Common\Exceptions\InvalidPropertyDataTypeException;
+use App\EtlMonitor\Common\Models\Interfaces\ModelInterface;
 use App\EtlMonitor\Common\Traits\HasHistoryTrait;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
@@ -134,6 +135,14 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model implements Mode
         return array_filter($transformable, function ($t) use ($ignore) {
             return !in_array($t, $ignore);
         });
+    }
+
+    /**
+     * @return int
+     */
+    public function getId(): int
+    {
+        return $this->id;
     }
 
     /**

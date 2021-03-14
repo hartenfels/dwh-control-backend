@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Artisan;
 class SetupCommand extends Command
 {
 
-    protected $signature = 'etl_monitor:setup {--skip-auth} {--skip-queues}';
+    protected $signature = 'etl_monitor:setup {--skip-auth} {--skip-elasticsearch} {--skip-queues}';
 
     protected $description = 'Initial Setup';
 
@@ -25,6 +25,11 @@ class SetupCommand extends Command
             Artisan::call('jetstream:install livewire');
         }
 
+        if (!$this->option('skip-elasticsearch')) {
+            echo '# Setting up Elasticsearch provider ...' . PHP_EOL;
+            Artisan::call('vendor:publish --provider="Matchory\Elasticsearch\ElasticsearchServiceProvider"');
+        }
+
         if (!$this->option('skip-queues')) {
             echo '# Setting up queues ...' . PHP_EOL;
             Artisan::call('queue:table');
@@ -36,7 +41,7 @@ class SetupCommand extends Command
         echo '# Setting up defaults ...' . PHP_EOL;
         $defaults = [
             'Sla' => [
-                'sla_definition_stati'
+                'sla_definition_lifecycles'
             ]
         ];
 
@@ -75,7 +80,8 @@ class SetupCommand extends Command
         $superadmin->syncPermissions([
             'Api' => [PermissionEnum::PERMISSION_READ(), PermissionEnum::PERMISSION_WRITE(), PermissionEnum::PERMISSION_ADMIN()],
             'Common' => [PermissionEnum::PERMISSION_READ(), PermissionEnum::PERMISSION_WRITE(), PermissionEnum::PERMISSION_ADMIN()],
-            'Sla' => [PermissionEnum::PERMISSION_READ(), PermissionEnum::PERMISSION_WRITE(), PermissionEnum::PERMISSION_ADMIN()]
+            'Sla' => [PermissionEnum::PERMISSION_READ(), PermissionEnum::PERMISSION_WRITE(), PermissionEnum::PERMISSION_ADMIN()],
+            'Etl' => [PermissionEnum::PERMISSION_READ(), PermissionEnum::PERMISSION_WRITE(), PermissionEnum::PERMISSION_ADMIN()]
         ]);
 
         echo "################################" . PHP_EOL;

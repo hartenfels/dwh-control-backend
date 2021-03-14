@@ -1,10 +1,8 @@
 <?php
 
-namespace App\EtlMonitor\Common\Models;
+namespace App\EtlMonitor\Common\Models\Interfaces;
 
-use Illuminate\Support\Collection;
-
-interface ModelInterface
+interface ElasticsearchModelInterface
 {
 
     public function delete();

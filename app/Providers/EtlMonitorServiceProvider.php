@@ -14,7 +14,7 @@ class EtlMonitorServiceProvider extends ServiceProvider
     /**
      * @var array
      */
-    protected static array $packages = ['Api', 'Common', 'Sla', 'Web'];
+    protected static array $packages = ['Api', 'Common', 'Etl', 'Sla', 'Web'];
 
     /**
      * @return void
@@ -28,6 +28,9 @@ class EtlMonitorServiceProvider extends ServiceProvider
         $this->translations();
     }
 
+    /**
+     *
+     */
     private function schedule()
     {
         if ($this->app->runningInConsole()) {
@@ -66,6 +69,9 @@ class EtlMonitorServiceProvider extends ServiceProvider
         }
     }
 
+    /**
+     *
+     */
     public function migrations()
     {
         foreach (static::$packages as $package) {
@@ -75,6 +81,9 @@ class EtlMonitorServiceProvider extends ServiceProvider
         }
     }
 
+    /**
+     *
+     */
     public function translations()
     {
         foreach (static::$packages as $package) {

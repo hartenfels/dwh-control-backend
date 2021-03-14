@@ -15,7 +15,7 @@ class CreateSlaDefinitionsTable extends Migration
     {
         Schema::create('etlmonitor_sla__sla_definitions', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->unsignedBigInteger('status_id');
+            $table->unsignedBigInteger('lifecycle_id');
             $table->string('type');
 
             $table->string('name');
@@ -25,7 +25,7 @@ class CreateSlaDefinitionsTable extends Migration
         });
 
         Schema::table('etlmonitor_sla__sla_definitions', function (Blueprint $table) {
-            $table->foreign('status_id', 'sla_definition__status_foreign')->references('id')->on('etlmonitor_sla__sla_definition_stati');
+            $table->foreign('lifecycle_id', 'sla_definition__lifecycle_foreign')->references('id')->on('etlmonitor_sla__sla_definition_lifecycles');
         });
     }
 

@@ -8,7 +8,7 @@ use App\EtlMonitor\Api\Traits\UsesDefaultShowMethodTrait;
 use App\EtlMonitor\Api\Traits\UsesDefaultStoreMethodTrait;
 use App\EtlMonitor\Api\Traits\UsesDefaultUpdateMethodTrait;
 
-class SlaDefinitionController extends Controller
+class AvailabilitySlaDefinitionController extends Controller
 {
     use UsesDefaultIndexMethodTrait,
         UsesDefaultShowMethodTrait,

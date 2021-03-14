@@ -2,55 +2,38 @@
 
 namespace App\EtlMonitor\Sla\Models;
 
-use App\EtlMonitor\Common\Models\Model;
-use App\EtlMonitor\Sla\Models\Interfaces\SlaProgressInterface;
-use Illuminate\Database\Eloquent\Builder;
+use App\EtlMonitor\Sla\Models\Abstract\SlaProgressAbstract;
+use App\EtlMonitor\Sla\Traits\SlaTypes;
 
-abstract class SlaProgress extends Model implements SlaProgressInterface
+class SlaProgress extends SlaProgressAbstract
 {
 
-    /**
-     * @var string
-     */
-    protected $table = 'sla_progress';
+    use SlaTypes;
 
     /**
-     * @var string[]
+     * @param array $attributes
+     * @param null $connection
+     * @return SlaProgress
      */
-    protected $fillable = [
-        'sla_id', 'type', 'is_override',
-        'time', 'progress_percent', 'source'
-    ];
-
-    protected $dates = [
-        'time'
-    ];
-
-    /**
-     * @var string
-     */
-    protected static string $type = '';
-
-    /**
-     * @return $this
-     */
-    public function setOverride(): self
+    public function newFromBuilder($attributes = [], $connection = null)
     {
-        $this->is_override = true;
+        if (is_null($attributes->type) || get_called_class() !== SlaProgress::class) {
+            return parent::newFromBuilder($attributes, $connection);
+        }
 
-        return $this;
-    }
+        if (is_null($class = static::sla_types()->{$attributes->progress}->sla)) {
+            throw new \InvalidArgumentException('Invalid SLA type');
+        }
 
-    /**
-     *
-     */
-    public static function boot()
-    {
-        parent::boot();
+        $model = (new $class)->newInstance([], true);
 
-        static::addGlobalScope('type', function (Builder $builder) {
-            $builder->where('type', static::$type);
-        });
+        $model->setRawAttributes((array) $attributes, true);
+
+        $model->setConnection($connection ?: $this->getConnectionName());
+
+        $model->fireModelEvent('retrieved', false);
+
+        return $model;
     }
 
 }

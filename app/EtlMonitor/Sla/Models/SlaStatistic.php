@@ -2,11 +2,43 @@
 
 namespace App\EtlMonitor\Sla\Models;
 
-use App\EtlMonitor\Common\Models\Model;
+use App\EtlMonitor\Sla\Models\Abstract\SlaStatisticAbstract;
 use App\EtlMonitor\Sla\Models\Interfaces\SlaStatisticInterface;
-use Illuminate\Database\Eloquent\Builder;
+use App\EtlMonitor\Sla\Traits\SlaTypes;
 
-abstract class SlaStatistic extends Model implements SlaStatisticInterface
+class SlaStatistic extends SlaStatisticAbstract
 {
 
+    use SlaTypes;
+
+    /**
+     * @param array $attributes
+     * @param null $connection
+     * @return SlaStatistic
+     */
+    public function newFromBuilder($attributes = [], $connection = null)
+    {
+        if (is_null($attributes->type) || get_called_class() !== SlaStatistic::class) {
+            return parent::newFromBuilder($attributes, $connection);
+        }
+
+        if (is_null($class = static::sla_types()->{$attributes->statistic}->sla)) {
+            throw new \InvalidArgumentException('Invalid SLA type');
+        }
+
+        $model = (new $class)->newInstance([], true);
+
+        $model->setRawAttributes((array) $attributes, true);
+
+        $model->setConnection($connection ?: $this->getConnectionName());
+
+        $model->fireModelEvent('retrieved', false);
+
+        return $model;
+    }
+
+    public function calculate(): Interfaces\SlaStatisticInterface
+    {
+        // TODO: Implement calculate() method.
+    }
 }

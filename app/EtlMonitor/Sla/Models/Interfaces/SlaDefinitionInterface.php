@@ -2,7 +2,7 @@
 
 namespace App\EtlMonitor\Sla\Models\Interfaces;
 
-use App\EtlMonitor\Common\Models\ModelInterface;
+use App\EtlMonitor\Common\Models\Interfaces\ModelInterface;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;

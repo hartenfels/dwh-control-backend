@@ -2,6 +2,7 @@
 
 namespace App\EtlMonitor\Sla\Models;
 
+use App\EtlMonitor\Sla\Models\Abstract\SlaStatisticAbstract;
 use App\EtlMonitor\Sla\Models\Interfaces\SlaInterface;
 use App\EtlMonitor\Sla\Models\Interfaces\SlaProgressInterface;
 use App\EtlMonitor\Sla\Traits\SlaTypes;
@@ -9,7 +10,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Collection;
 
-class AvailabilitySlaStatistic extends SlaStatistic
+class AvailabilitySlaStatistic extends SlaStatisticAbstract
 {
 
     use SlaTypes;
@@ -65,17 +66,16 @@ class AvailabilitySlaStatistic extends SlaStatistic
     }
 
     /**
-     * @param int $days
+     * @param int|null $count
      * @param bool $save
      * @return $this
      */
-    public function calculateHistory(int $days = 14, bool $save = true): self
+    public function calculateHistory(int $count = null, bool $save = true): self
     {
         /** @var Collection<SlaInterface> $slas */
         $slas = AvailabilitySla::where('type', $this->sla->type)
             ->where('sla_definition_id', $this->sla->sla_definition_id)
-            ->where('range_start', '<', $this->sla->range_start)
-            ->where('range_start', '>', (clone $this->sla->range_start)->subDays($days)->startOfDay())
+            ->where('range_end', '<=', $this->sla->range_end)
             ->orderBy('range_start', 'desc')
             ->get();
 

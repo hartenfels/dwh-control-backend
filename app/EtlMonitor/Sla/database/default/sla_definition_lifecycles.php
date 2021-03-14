@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'model' => \App\EtlMonitor\Sla\Models\SlaDefinitionStatus::class,
+    'model' => \App\EtlMonitor\Sla\Models\SlaDefinitionLifecycle::class,
     'items' => [
         [
             'name' => 'draft'

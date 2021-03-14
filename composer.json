@@ -15,6 +15,7 @@
         "laravel/tinker": "^2.5",
         "livewire/livewire": "^2.0",
         "markrogoyski/math-php": "^1.10",
+        "matchory/elasticsearch": "^2.1",
         "matthenning/eloquent-api-filter": "^2.0.1",
         "myclabs/php-enum": "^1.8",
         "nesbot/carbon": "^2.45"

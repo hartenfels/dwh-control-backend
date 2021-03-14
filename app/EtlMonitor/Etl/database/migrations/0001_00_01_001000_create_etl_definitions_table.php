@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateSlaDefinitionStatiTable extends Migration
+class CreateEtlDefinitionsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,9 +13,11 @@ class CreateSlaDefinitionStatiTable extends Migration
      */
     public function up()
     {
-        Schema::create('etlmonitor_sla__sla_definition_stati', function (Blueprint $table) {
+        Schema::create('etlmonitor_etl__etl_definitions', function (Blueprint $table) {
             $table->bigIncrements('id');
+            $table->string('type');
 
+            $table->string('etl_id')->unique();
             $table->string('name');
 
             $table->timestamps();
@@ -29,6 +31,6 @@ class CreateSlaDefinitionStatiTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('etlmonitor_sla__sla_definition_stati');
+        Schema::dropIfExists('etlmonitor_etl__etl_definitions');
     }
 }

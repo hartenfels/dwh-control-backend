@@ -2,12 +2,10 @@
 
 namespace App\EtlMonitor\Sla\Models;
 
-use App\EtlMonitor\Sla\Models\DeliverableSlaProgress;
+use App\EtlMonitor\Sla\Models\Abstract\SlaAbstract;
 use App\EtlMonitor\Sla\Models\Interfaces\SlaInterface;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * App\EtlMonitor\Sla\Models\DeliverableSla
@@ -73,7 +71,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @method static \Illuminate\Database\Eloquent\Builder|DeliverableSla whereProgressLastIntimeId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|DeliverableSla whereProgressLastLateId($value)
  */
-class DeliverableSla extends Sla
+class DeliverableSla extends SlaAbstract
 {
 
     /**

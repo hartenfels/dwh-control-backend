@@ -2,6 +2,7 @@
 
 namespace App\EtlMonitor\Sla\Models;
 
+use App\EtlMonitor\Sla\Models\Abstract\SlaStatisticAbstract;
 use App\EtlMonitor\Sla\Models\Interfaces\SlaInterface;
 use App\EtlMonitor\Sla\Traits\SlaTypes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,7 +11,7 @@ use MathPHP\Exception\BadDataException;
 use MathPHP\Exception\OutOfBoundsException;
 use MathPHP\Statistics\Descriptive;
 
-class DeliverableSlaStatistic extends SlaStatistic
+class DeliverableSlaStatistic extends SlaStatisticAbstract
 {
 
     use SlaTypes;
@@ -19,7 +20,7 @@ class DeliverableSlaStatistic extends SlaStatistic
      * @var string[]
      */
     protected $fillable = [
-        'sla_id', 'average_duration_minutes_lower', 'average_duration_minutes_upper', 'achievement_history'
+        'sla_id', 'average_lower', 'average_upper', 'achievement_history'
     ];
 
     /**
@@ -68,8 +69,8 @@ class DeliverableSlaStatistic extends SlaStatistic
 
         if (count($achieved) > 0)
         {
-            $this->average_duration_minutes_lower = Descriptive::percentile($achieved, 25);
-            $this->average_duration_minutes_upper = Descriptive::percentile($achieved, 75);
+            $this->average_lower = Descriptive::percentile($achieved, 25);
+            $this->average_upper = Descriptive::percentile($achieved, 75);
         }
 
         if ($save) $this->save();
@@ -78,18 +79,20 @@ class DeliverableSlaStatistic extends SlaStatistic
     }
 
     /**
-     * @param int $days
+     * @param int|null $count
      * @param bool $save
      * @return $this
      */
-    public function calculateHistory(int $days = 14, bool $save = true): self
+    public function calculateHistory(int $count = null, bool $save = true): self
     {
+        $count = $count ?? config('etl_monitor.search_max_results_per_type');
+
         /** @var Collection<SlaInterface> $slas */
         $slas = DeliverableSla::where('type', $this->sla->type)
             ->where('sla_definition_id', $this->sla->sla_definition_id)
-            ->where('range_start', '<', $this->sla->range_start)
-            ->where('range_start', '>', (clone $this->sla->range_start)->subDays($days)->startOfDay())
+            ->where('range_end', '<=', $this->sla->range_end)
             ->orderBy('range_start', 'desc')
+            ->limit($count)
             ->get();
 
         $this->achievement_history = $slas->reverse()->map(function (SlaInterface $sla) {

@@ -22,39 +22,4 @@ class DeliverableSlaController extends Controller
         UsesDefaultUpdateMethodTrait,
         UsesDefaultDestroyMethodTrait;
 
-    /**
-     * @param string $start
-     * @param string $end
-     * @return JsonResponse
-     * @throws AuthorizationException
-     */
-    #[CustomAction(Action::INDEX)]
-    public function inRange(string $start, string $end): JsonResponse
-    {
-        $this->auth();
-
-        $start = Carbon::parse($start);
-        $end = Carbon::parse($end);
-
-        $query = DeliverableSla::query()->inRange($start, $end);
-
-        if ($this->request->has('all')) {
-            return $this->respondWithModels($query->get());
-        }
-
-        return $this->respondFilteredAndPaginated($query);
-    }
-
-
-
-
-    /**
-     * @return JsonResponse
-     * @throws AuthorizationException
-     */
-    public function _index(): JsonResponse
-    {
-        $this->auth();
-    }
-
 }

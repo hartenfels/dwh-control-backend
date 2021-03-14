@@ -2,6 +2,8 @@
 
 namespace App\EtlMonitor\Sla\Models;
 
+use App\EtlMonitor\Sla\Models\Abstract\SlaProgressAbstract;
+
 /**
  * App\EtlMonitor\Sla\Models\DeliverableSlaProgress
  *
@@ -32,7 +34,7 @@ namespace App\EtlMonitor\Sla\Models;
  * @method static \Illuminate\Database\Eloquent\Builder|DeliverableSlaProgress whereUpdatedAt($value)
  * @mixin \Eloquent
  */
-class AvailabilitySlaProgress extends SlaProgress
+class AvailabilitySlaProgress extends SlaProgressAbstract
 {
 
     /**

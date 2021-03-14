@@ -2,6 +2,7 @@
 
 namespace App\EtlMonitor\Sla\Models;
 
+use App\EtlMonitor\Sla\Models\Abstract\SlaAbstract;
 use App\EtlMonitor\Sla\Models\Interfaces\SlaInterface;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
@@ -70,7 +71,7 @@ use Carbon\CarbonInterface;
  * @method static \Illuminate\Database\Eloquent\Builder|DeliverableSla whereProgressLastIntimeId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|DeliverableSla whereProgressLastLateId($value)
  */
-class AvailabilitySla extends Sla
+class AvailabilitySla extends SlaAbstract
 {
 
     /**

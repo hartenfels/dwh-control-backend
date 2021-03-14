@@ -9,11 +9,8 @@ use App\EtlMonitor\Api\Traits\UsesDefaultIndexMethodTrait;
 use App\EtlMonitor\Api\Traits\UsesDefaultShowMethodTrait;
 use App\EtlMonitor\Api\Traits\UsesDefaultStoreMethodTrait;
 use App\EtlMonitor\Api\Traits\UsesDefaultUpdateMethodTrait;
-use App\EtlMonitor\Sla\Models\AvailabilitySlaDefinition;
-use App\EtlMonitor\Sla\Models\DeliverableSlaDefinition;
-use App\EtlMonitor\Sla\Models\Interfaces\SlaDefinitionInterface;
+use App\EtlMonitor\Common\Transfer\AutocompleteResult;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Collection;
 
 class SearchController extends Controller
 {
@@ -31,25 +28,14 @@ class SearchController extends Controller
     #[CustomAction(Action::INDEX)]
     public function autocomplete(string $search_text): JsonResponse
     {
-        $sql_filter = '%' . $search_text . '%';
         $results = [];
 
-        $sla_definition_collection = new Collection();
-
-        /** @var Collection<DeliverableSlaDefinition> $definitions */
-        $definitions = DeliverableSlaDefinition::where('name', 'like', $sql_filter)->limit(5)->get()
-            ->merge(AvailabilitySlaDefinition::where('name', 'like', $sql_filter)->limit(5)->get());
-        $definitions->each(function (SlaDefinitionInterface $d) use (&$sla_definition_collection) {
-            $sla_definition_collection->add((object)[
-                'id' => $d->id,
-                'type' => $d->type,
-                'name' => $d->name,
-                'info' => $d->statistic,
-                'model' => $d->model(),
-                'icon' => $d->getIcon(),
-            ]);
+        collect(config('etl_monitor.searchable_models'))->each(function(string $static) use ($search_text, &$results) {
+            $static::autocomplete($search_text)->each(function (AutocompleteResult $result) use (&$results) {
+                if (!isset($results[$result->entity])) $results[$result->entity] = [];
+                $results[$result->entity][] = $result;
+            });
         });
-        $results['sla_definitions'] = $sla_definition_collection->toArray();
 
         return $this->respondWithData($results);
     }

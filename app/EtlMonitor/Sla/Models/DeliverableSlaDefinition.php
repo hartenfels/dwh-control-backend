@@ -2,6 +2,7 @@
 
 namespace App\EtlMonitor\Sla\Models;
 
+use App\EtlMonitor\Sla\Models\Abstract\SlaDefinitionAbstract;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
@@ -32,7 +33,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @method static \Illuminate\Database\Eloquent\Builder|DeliverableSlaDefinition whereUpdatedAt($value)
  * @mixin \Eloquent
  */
-class DeliverableSlaDefinition extends SlaDefinition
+class DeliverableSlaDefinition extends SlaDefinitionAbstract
 {
 
     /**

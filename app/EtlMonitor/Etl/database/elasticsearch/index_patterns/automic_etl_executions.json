@@ -1,0 +1,51 @@
+{
+    "index_patterns": ["automic_etl_executions-*"],
+    "mappings": {
+        "properties": {
+            "@timestamp": {
+                "type": "date"
+            },
+            "date": {
+                "properties": {
+                    "activation": {
+                        "type": "date"
+                    },
+                    "start": {
+                        "type": "date"
+                    },
+                    "end": {
+                        "type": "date"
+                    },
+                    "end_pp": {
+                        "type": "date"
+                    }
+                }
+            },
+            "name": {
+                "type": "keyword"
+            },
+            "alias": {
+                "type": "keyword"
+            },
+            "etl_id": {
+                "type": "keyword"
+            },
+            "predecessor_id": {
+                "type": "keyword"
+            },
+            "status": {
+                "type": "keyword"
+            },
+            "anomalies": {
+                "properties": {
+                    "runtime": {
+                        "type": "double"
+                    },
+                    "datasets": {
+                        "type": "double"
+                    }
+                }
+            }
+        }
+    }
+}
