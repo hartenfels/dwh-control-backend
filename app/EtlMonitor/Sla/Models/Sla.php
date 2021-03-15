@@ -45,7 +45,7 @@ class Sla extends SlaAbstract
      */
     public function newFromBuilder($attributes = [], $connection = null)
     {
-        if (is_null($attributes->type) || get_called_class() !== Sla::class) {
+        if (!isset($attributes->type) || get_called_class() !== Sla::class) {
             return parent::newFromBuilder($attributes, $connection);
         }
 

@@ -17,7 +17,7 @@ class SlaDefinition extends SlaDefinitionAbstract
      */
     public function newFromBuilder($attributes = [], $connection = null)
     {
-        if (is_null($attributes->type) || get_called_class() !== SlaDefinition::class) {
+        if (!isset($attributes->type) || get_called_class() !== SlaDefinition::class) {
             return parent::newFromBuilder($attributes, $connection);
         }
 

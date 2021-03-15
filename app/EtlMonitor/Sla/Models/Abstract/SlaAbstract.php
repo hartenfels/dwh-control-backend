@@ -338,7 +338,7 @@ abstract class SlaAbstract extends Model implements SlaInterface
     {
         /** @var SlaStatistic $statistic */
         if (is_null($this->statistic)) {
-            $statistic = $this->statistic()->create();
+            $statistic = $this->statistic()->create(['type' => $this->type])->fresh();
             $this->fresh();
         } else {
             $statistic = $this->statistic;

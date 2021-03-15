@@ -3,6 +3,7 @@
 namespace App\EtlMonitor\Api\Http\Transformers;
 
 use App\EtlMonitor\Common\Models\ElasticsearchModel;
+use App\EtlMonitor\Common\Models\Interfaces\ModelInterface;
 use App\EtlMonitor\Common\Models\Model;
 use Illuminate\Database\Eloquent\Collection;
 use ReflectionException;
@@ -35,7 +36,7 @@ class GenericTransformer extends Transformer
         foreach ($model::getRelationNames() as $relation => $return_type) {
             $arr['_relations'][$relation] = $return_type;
             if ($model->relationLoaded($relation)) {
-                if ($model->$relation instanceof Model) {
+                if ($model->$relation instanceof ModelInterface) {
                     $relations[$relation] = $model->$relation->enrich()->transform();
                 } elseif ($model->$relation instanceof Collection) {
                     $relations[$relation] = $model->$relation->map(function ($m) {

@@ -120,7 +120,7 @@ class SeedCommand extends Command
         DeliverableSlaDefinition::all()->merge(AvailabilitySlaDefinition::all())->each(function (SlaDefinitionInterface $d) {
             if (random_int(1, 6) > 4) {
                 $f = Factory::create();
-                $days = random_int(3, 7);
+                $days = random_int(3, 6);
                 $d->weekly_timeranges()->create([
                     'range_start' => '00:00',
                     'range_end' => ((int)$f->time('H') + $days*24) . ':' . $f->time('i') ,
@@ -147,14 +147,14 @@ class SeedCommand extends Command
                     $mins_end = $sla->range_start->diffInMinutes($sla->range_end) * 1.3;
                     $random_min = random_int(0, $mins_end);
                     $pd->addMinutes($random_min);
+
                     if ($sla instanceof AvailabilitySla) {
                         /** @var Carbon $cursor */
                         $cursor = $sla->range_start;
                         do {
                             $sla->addProgress($cursor, progress_percent: random_int(60, 100), source: 'Seed', calculate: true);
                         } while($cursor->addMinutes(30)->lt($sla->range_end));
-                    }
-                    if ($sla instanceof DeliverableSla) {
+                    } elseif ($sla instanceof DeliverableSla) {
                         $sla->addProgress($pd, progress_percent: 100, source: 'Seed', calculate: true);
                     }
                 });

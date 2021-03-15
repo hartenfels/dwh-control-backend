@@ -16,6 +16,15 @@ abstract class SlaStatisticAbstract extends Model implements SlaStatisticInterfa
     protected $table = 'sla_statistics';
 
     /**
+     * @var string[]
+     */
+    protected $fillable = [
+        'sla_id', 'type',
+        'average_lower', 'average_upper',
+        'progress_history', 'achievement_history'
+    ];
+
+    /**
      *
      */
     public static function boot()

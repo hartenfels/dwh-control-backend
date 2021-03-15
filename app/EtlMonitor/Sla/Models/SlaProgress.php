@@ -17,11 +17,11 @@ class SlaProgress extends SlaProgressAbstract
      */
     public function newFromBuilder($attributes = [], $connection = null)
     {
-        if (is_null($attributes->type) || get_called_class() !== SlaProgress::class) {
+        if (!isset($attributes->type) || get_called_class() !== SlaProgress::class) {
             return parent::newFromBuilder($attributes, $connection);
         }
 
-        if (is_null($class = static::sla_types()->{$attributes->progress}->sla)) {
+        if (is_null($class = static::sla_types()->{$attributes->type}->progress)) {
             throw new \InvalidArgumentException('Invalid SLA type');
         }
 

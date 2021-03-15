@@ -164,6 +164,7 @@ abstract class SlaDefinitionAbstract extends Model implements SlaDefinitionInter
 
         /** @var SlaInterface $sla */
         $sla = $this->slas()->create([
+            'type' => $this->type,
             'timerange_id' => $timerange->id,
             'timerange_type' => $timerange->type,
             'range_start' => $timerange->start($time),

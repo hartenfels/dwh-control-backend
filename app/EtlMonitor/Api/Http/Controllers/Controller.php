@@ -291,7 +291,7 @@ class Controller extends \App\Http\Controllers\Controller
     public function respondWithModels(Collection $models): JsonResponse
     {
         $transformed = $models->map(function (Model|ElasticsearchModel $model) {
-            return collect($model->enrich()->transform());
+            return $model->enrich()->transform();
         });
 
         if ($this->request->get('relations') == 'separate') {
