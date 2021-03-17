@@ -15,7 +15,7 @@ trait EtlTypes {
         return (object)[
             'automic' => (object)[
                 'definition' => AutomicEtlDefinition::class,
-                'executions' => AutomicEtlExecution::class
+                'execution' => AutomicEtlExecution::class
             ]
         ];
     }

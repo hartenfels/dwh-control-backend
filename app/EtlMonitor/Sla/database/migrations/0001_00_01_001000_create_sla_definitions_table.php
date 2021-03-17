@@ -21,6 +21,9 @@ class CreateSlaDefinitionsTable extends Migration
             $table->string('name');
             $table->double('target_percent')->nullable()->default(100);
 
+            $table->string('source')->nullable()->default('external');
+            $table->json('rules')->nullable();
+
             $table->timestamps();
         });
 

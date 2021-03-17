@@ -2,6 +2,7 @@
 
 namespace App\EtlMonitor\Sla\Models;
 
+use App\EtlMonitor\Sla\Exceptions\InvalidParentCallException;
 use App\EtlMonitor\Sla\Models\Abstract\SlaAbstract;
 use App\EtlMonitor\Sla\Traits\SlaTypes;
 use Carbon\CarbonInterface;
@@ -9,9 +10,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class Sla extends SlaAbstract
 {
-
     use SlaTypes;
-
 
     /**
      * @param Builder $builder
@@ -64,8 +63,22 @@ class Sla extends SlaAbstract
         return $model;
     }
 
+    /**
+     * @param CarbonInterface|null $time
+     * @return Interfaces\SlaInterface
+     * @throws InvalidParentCallException
+     */
     public function calculate(CarbonInterface $time = null): Interfaces\SlaInterface
     {
-        // TODO: Implement calculate() method.
+        throw new InvalidParentCallException('This method needs to be called on a child class');
+    }
+
+    /**
+     * @return Interfaces\SlaInterface
+     * @throws InvalidParentCallException
+     */
+    public function fetchProgress(): Interfaces\SlaInterface
+    {
+        throw new InvalidParentCallException('This method needs to be called on a child class');
     }
 }

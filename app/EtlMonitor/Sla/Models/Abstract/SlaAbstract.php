@@ -7,6 +7,7 @@ use App\EtlMonitor\Sla\Models\Interfaces\SlaInterface;
 use App\EtlMonitor\Sla\Models\Interfaces\SlaProgressInterface;
 use App\EtlMonitor\Sla\Models\Interfaces\TimerangeInterface;
 use App\EtlMonitor\Sla\Models\Sla;
+use App\EtlMonitor\Sla\Models\SlaAchievementCondition;
 use App\EtlMonitor\Sla\Models\SlaDefinition;
 use App\EtlMonitor\Sla\Models\SlaProgress;
 use App\EtlMonitor\Sla\Models\SlaStatistic;
@@ -35,7 +36,8 @@ abstract class SlaAbstract extends Model implements SlaInterface
      */
     protected $fillable = [
         'sla_definition_id', 'timerange_id', 'type', 'timerange_type', 'error_margin_minutes',
-        'range_start', 'range_end', 'is_open', 'target_percent'
+        'range_start', 'range_end', 'is_open', 'target_percent',
+        'source', 'rules'
     ];
 
     /**
@@ -48,7 +50,15 @@ abstract class SlaAbstract extends Model implements SlaInterface
         'achieved_progress_percent', 'last_progress_percent',
         'progress_last_intime_id', 'progress_first_intime_achieved_id',
         'progress_last_late_id', 'progress_first_late_achieved_id',
-        'statistics_average_duration_minutes_lower', 'statistics_average_duration_minutes_upper'
+        'statistics_average_duration_minutes_lower', 'statistics_average_duration_minutes_upper',
+        'source', 'rules'
+    ];
+
+    /**
+     * @var string[]
+     */
+    protected $casts = [
+        'rules' => 'array'
     ];
 
     /**
@@ -59,16 +69,17 @@ abstract class SlaAbstract extends Model implements SlaInterface
     ];
 
     /**
-     * @var string[]
-     */
-    protected $with = [
-        'definition', 'statistic'
-    ];
-
-    /**
      * @var string
      */
     protected static string $type = '';
+
+    /**
+     * @return SlaInterface|null
+     */
+    public function next(): ?SlaInterface
+    {
+        return $this->definition->slas()->where('range_start', '>', $this->range_end)->orderBy('range_start')->first();
+    }
 
     /**
      * @param CarbonInterface $time
@@ -95,10 +106,12 @@ abstract class SlaAbstract extends Model implements SlaInterface
     /**
      * @param CarbonInterface|null $time
      * @param bool $calculate
+     * @param bool $fetch
      * @return Sla
      */
-    public function updateProgress(CarbonInterface $time = null, bool $calculate = true): self
+    public function updateProgress(CarbonInterface $time = null, bool $calculate = true, bool $fetch = true): self
     {
+        if ($fetch) $this->fetchProgress();
         $time = $time ?? Carbon::now();
 
         if ($this->range_start->gt($time)) {
@@ -327,6 +340,14 @@ abstract class SlaAbstract extends Model implements SlaInterface
     public function progress_first_late_achieved(): belongsTo
     {
         return $this->belongsTo(SlaProgress::class, 'progress_first_late_achieved_id');
+    }
+
+    /**
+     * @return HasMany
+     */
+    public function achievement_conditions(): HasMany
+    {
+        return $this->hasMany(SlaAchievementCondition::class, 'sla_id');
     }
 
     /**

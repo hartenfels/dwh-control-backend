@@ -9,12 +9,12 @@ use App\EtlMonitor\Api\Traits\UsesDefaultIndexMethodTrait;
 use App\EtlMonitor\Api\Traits\UsesDefaultShowMethodTrait;
 use App\EtlMonitor\Api\Traits\UsesDefaultStoreMethodTrait;
 use App\EtlMonitor\Api\Traits\UsesDefaultUpdateMethodTrait;
-use App\EtlMonitor\Sla\Models\Sla;
+use App\EtlMonitor\Sla\Models\SlaDefinition;
 use Carbon\Carbon;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 
-class SlaController extends Controller
+class SlaDefinitionController extends Controller
 {
     use UsesDefaultIndexMethodTrait,
         UsesDefaultShowMethodTrait,
@@ -36,7 +36,9 @@ class SlaController extends Controller
         $start = Carbon::parse($start);
         $end = Carbon::parse($end);
 
-        $query = Sla::query()->inRange($start, $end);
+        $query = SlaDefinition::query()->with(['slas' => function ($q) use ($start, $end) {
+            $q->inRange($start, $end);
+        }]);
 
         if ($this->request->has('all')) {
             return $this->respondFiltered($query);

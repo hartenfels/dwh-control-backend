@@ -4,6 +4,7 @@ namespace App\EtlMonitor\Common\Console;
 
 use App\EtlMonitor\Etl\Models\AutomicEtlDefinition;
 use App\EtlMonitor\Etl\Models\AutomicEtlExecution;
+use App\EtlMonitor\Etl\Models\EtlDefinition;
 use App\EtlMonitor\Etl\Models\Interfaces\EtlDefinitionInterface;
 use App\EtlMonitor\Sla\Models\AvailabilitySla;
 use App\EtlMonitor\Sla\Models\AvailabilitySlaDefinition;
@@ -11,7 +12,6 @@ use App\EtlMonitor\Sla\Models\DeliverableSla;
 use App\EtlMonitor\Sla\Models\DeliverableSlaDefinition;
 use App\EtlMonitor\Sla\Models\Interfaces\SlaDefinitionInterface;
 use App\EtlMonitor\Sla\Models\Interfaces\SlaInterface;
-use App\EtlMonitor\Sla\Models\Interfaces\SlaProgressInterface;
 use App\EtlMonitor\Sla\Services\SlaCreationService;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
@@ -26,7 +26,7 @@ class SeedCommand extends Command
     /**
      * @var string
      */
-    protected $signature = 'etl_monitor:seed {--etl_definitions=40} {--sla_definitions=10}';
+    protected $signature = 'etl_monitor:seed {--weeks=6} {--etl_definitions=40} {--sla_definitions=10}';
 
     /**
      * @var string
@@ -45,21 +45,22 @@ class SeedCommand extends Command
         for ($i = 0; $i < 4; $i++) {
             for ($j = 0; $j < (int)$this->option('etl_definitions')/4; $j++) {
                 $f = Factory::create();
+                $n = $f->domainName . '/' . $f->domainWord . '.' . $f->iban();
                 $definitions_tiers[$i][] = AutomicEtlDefinition::create([
-                    'name' => $f->domainName,
-                    'etl_id' => $f->domainName . '/' . $f->domainWord
+                    'name' => $n,
+                    'etl_id' => $n
                 ]);
             }
         }
 
         echo "Seeding ETL executions" . PHP_EOL;
-        foreach (CarbonPeriod::create(Carbon::today()->subWeeks(6)->startOfWeek(), Carbon::today()) as $day) {
+        foreach (CarbonPeriod::create(Carbon::today()->subWeeks((int)$this->option('weeks'))->startOfWeek(), Carbon::today()) as $day) {
             $prev_tier_executions = [];
             $executions = [];
             collect($definitions_tiers)->each(function (array $definitions, $tier) use (&$prev_tier_executions, &$executions, $day) {
                 collect($definitions)->each(function (EtlDefinitionInterface $definition) use (&$prev_tier_executions, &$executions, $tier, $day) {
-                    $s = (clone $day)->addHours(random_int($tier, $tier + 0.1));
-                    $e = (clone $s)->addHours(random_int($tier + 0.9, $tier + 1));
+                    $s = (clone $day)->addHours(random_int($tier, $tier + 1));
+                    $e = (clone $s)->addHours(random_int($tier + 2, $tier + 4));
                     $runtime = random_int(1, 10) > 8 ? rand(-3, 3) : null;
                     $datasets = random_int(1, 10) > 8 ? rand(-3, 3) : null;
                     $run_id = random_int(1000000, 8000000);
@@ -69,7 +70,7 @@ class SeedCommand extends Command
                         'etl_id' => $definition->etl_id,
                         'name' => $definition->name,
                         'alias' => $definition->name,
-                        'status' => random_int(1800, 1999),
+                        'status' => random_int(0, 10) > 8 ? 1800 : 1900,
                         'date' => [
                             'activation' => $s->format('c'),
                             'start' => $s->format('c'),
@@ -100,12 +101,21 @@ class SeedCommand extends Command
             $definition->calculateStatistic();
         });
 
+        /** @var Collection<EtlDefinitionInterface> $etls */
+        $etls = EtlDefinition::all();
+
         echo "Seeding SLA definitions" . PHP_EOL;
         for ($i = 0; $i < (int)$this->option('sla_definitions') / 2; $i++) {
             $f = Factory::create();
+            $rules = [];
+            for ($j = 0; $j < random_int(1, 4); $j++) {
+                $rules[] = $etls->get(random_int(0, $etls->count() - 1))->etl_id;
+            }
             DeliverableSlaDefinition::create([
                 'name' => $f->name,
-                'lifecycle_id' => random_int(1, 3)
+                'lifecycle_id' => random_int(1, 3),
+                'source' => 'etl',
+                'rules' => $rules
             ]);
 
             $f = Factory::create();
@@ -140,24 +150,21 @@ class SeedCommand extends Command
         });
 
         echo "Creating SLAs" . PHP_EOL;
-        DeliverableSlaDefinition::all()->merge(AvailabilitySlaDefinition::all())->each(function (SlaDefinitionInterface $d) {
-            foreach (CarbonPeriod::create(Carbon::today()->subWeeks(6)->startOfWeek(), Carbon::today()) as $day) {
+        AvailabilitySlaDefinition::all()->each(function (SlaDefinitionInterface $d) {
+            foreach (CarbonPeriod::create(Carbon::today()->subWeeks((int)$this->option('weeks'))->startOfWeek(), Carbon::today()) as $day) {
                 SlaCreationService::make($d, $day)->invoke()->each(function (SlaInterface $sla) use ($day) {
-                    $pd = clone $sla->range_start;
-                    $mins_end = $sla->range_start->diffInMinutes($sla->range_end) * 1.3;
-                    $random_min = random_int(0, $mins_end);
-                    $pd->addMinutes($random_min);
-
-                    if ($sla instanceof AvailabilitySla) {
-                        /** @var Carbon $cursor */
-                        $cursor = $sla->range_start;
-                        do {
-                            $sla->addProgress($cursor, progress_percent: random_int(60, 100), source: 'Seed', calculate: true);
-                        } while($cursor->addMinutes(30)->lt($sla->range_end));
-                    } elseif ($sla instanceof DeliverableSla) {
-                        $sla->addProgress($pd, progress_percent: 100, source: 'Seed', calculate: true);
-                    }
+                    /** @var Carbon $cursor */
+                    $cursor = $sla->range_start;
+                    do {
+                        $sla->addProgress($cursor, progress_percent: random_int(60, 100), source: 'Seed', calculate: true);
+                    } while($cursor->addMinutes(30)->lt($sla->range_end));
                 });
+            }
+        });
+
+        DeliverableSlaDefinition::all()->each(function (SlaDefinitionInterface $d) {
+            foreach (CarbonPeriod::create(Carbon::today()->subWeeks((int)$this->option('weeks'))->startOfWeek(), Carbon::today()) as $day) {
+                SlaCreationService::make($d, $day)->invoke();
             }
         });
 

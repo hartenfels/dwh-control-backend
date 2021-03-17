@@ -33,6 +33,7 @@ class AutomicEtlExecutionController extends Controller
         $query = [
             'query' => [
                 'bool' => [
+                    'minimum_should_match' => 1,
                     'must' => [],
                     'should' => [
                         [
@@ -72,17 +73,17 @@ class AutomicEtlExecutionController extends Controller
             ]
         ];
 
-        if ($this->request->has('filter') && isset($this->request->get('filter')['definition'])) {
+        if ($this->request->has('filter') && isset($this->request->get('filter')['etl_id'])) {
             $query['query']['bool']['must'][] = [
                 'match' => [
-                    'etl_id.keyword' => AutomicEtlDefinition::find($this->request->get('filter')['definition'])->etl_id
+                    'etl_id.keyword' => $this->request->get('filter')['etl_id']
                 ]
             ];
         }
 
-        $query = AutomicEtlExecution::query()->body($query);
+        $models = AutomicEtlExecution::query()->body($query)->take(config('etl_monitor.etl_executions_elasticsearch_maxtake'))->get();
 
-        return $this->respondWithModels($query->get());
+        return $this->respondWithModels(collect($models));
     }
 
 }

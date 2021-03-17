@@ -4,6 +4,7 @@ namespace App\EtlMonitor\Sla\Models;
 
 use App\EtlMonitor\Sla\Models\Abstract\SlaAbstract;
 use App\EtlMonitor\Sla\Models\Interfaces\SlaInterface;
+use App\EtlMonitor\Sla\Services\SlaEtlProgressFetcherService;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 
@@ -71,7 +72,7 @@ use Carbon\CarbonInterface;
  * @method static \Illuminate\Database\Eloquent\Builder|DeliverableSla whereProgressLastIntimeId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|DeliverableSla whereProgressLastLateId($value)
  */
-class DeliverableSla extends SlaAbstract
+class DeliverableSla extends Sla
 {
 
     /**
@@ -85,6 +86,18 @@ class DeliverableSla extends SlaAbstract
      * @var string
      */
     protected static string $type = 'deliverable';
+
+    /**
+     * @return SlaInterface
+     */
+    public function fetchProgress(): SlaInterface
+    {
+        if ($this->source == 'etl') {
+            SlaEtlProgressFetcherService::make($this, $this->next())->invoke();
+        }
+
+        return $this;
+    }
 
     /**
      * @param CarbonInterface|null $time

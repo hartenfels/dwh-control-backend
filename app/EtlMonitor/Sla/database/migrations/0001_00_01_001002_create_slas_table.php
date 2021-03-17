@@ -25,6 +25,9 @@ class CreateSlasTable extends Migration
             $table->timestamp('achieved_at')->nullable();
             $table->integer('error_margin_minutes');
 
+            $table->string('source')->nullable()->default('external');
+            $table->json('rules')->nullable();
+
             $table->boolean('is_open')->nullable()->default(true);
             $table->string('status')->nullable()->default('waiting');
 

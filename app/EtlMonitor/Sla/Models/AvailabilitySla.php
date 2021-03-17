@@ -71,7 +71,7 @@ use Carbon\CarbonInterface;
  * @method static \Illuminate\Database\Eloquent\Builder|DeliverableSla whereProgressLastIntimeId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|DeliverableSla whereProgressLastLateId($value)
  */
-class AvailabilitySla extends SlaAbstract
+class AvailabilitySla extends Sla
 {
 
     /**
@@ -85,6 +85,16 @@ class AvailabilitySla extends SlaAbstract
      * @var string
      */
     protected static string $type = 'availability';
+
+    /**
+     * @return SlaInterface
+     */
+    public function fetchProgress(): SlaInterface
+    {
+
+
+        return $this;
+    }
 
     /**
      * @param CarbonInterface|null $time

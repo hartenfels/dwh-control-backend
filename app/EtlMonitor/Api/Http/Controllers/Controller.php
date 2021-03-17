@@ -76,7 +76,7 @@ class Controller extends \App\Http\Controllers\Controller
         $query = $model_class_name::query();
 
         if ($this->request->has('all')) {
-            return $this->respondWithModels($query->get());
+            return $this->respondFiltered($query->get());
         }
 
         return $this->respondFilteredAndPaginated($query);

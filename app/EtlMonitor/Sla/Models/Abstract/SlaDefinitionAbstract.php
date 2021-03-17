@@ -9,6 +9,7 @@ use App\EtlMonitor\Sla\Models\DailyTimerange;
 use App\EtlMonitor\Sla\Models\Interfaces\SlaDefinitionInterface;
 use App\EtlMonitor\Sla\Models\Interfaces\SlaInterface;
 use App\EtlMonitor\Sla\Models\Interfaces\TimerangeInterface;
+use App\EtlMonitor\Sla\Models\Sla;
 use App\EtlMonitor\Sla\Models\SlaDefinition;
 use App\EtlMonitor\Sla\Models\SlaDefinitionLifecycle;
 use App\EtlMonitor\Sla\Models\SlaDefinitionStatistic;
@@ -37,14 +38,22 @@ abstract class SlaDefinitionAbstract extends Model implements SlaDefinitionInter
      * @var string[]
      */
     protected $fillable = [
-        'name', 'type', 'lifecycle_id', 'target_percent'
+        'name', 'type', 'lifecycle_id', 'target_percent',
+        'source', 'rules'
+    ];
+
+    /**
+     * @var string[]
+     */
+    protected $casts = [
+        'rules' => 'array'
     ];
 
     /**
      * @var string[]
      */
     protected $with = [
-        'lifecycle', 'statistic'
+        'lifecycle'
     ];
 
     /**
@@ -170,8 +179,10 @@ abstract class SlaDefinitionAbstract extends Model implements SlaDefinitionInter
             'range_start' => $timerange->start($time),
             'range_end' => $timerange->end($time),
             'error_margin_minutes' => $timerange->error_margin_minutes,
-            'target_percent' => $this->target_percent
-        ]);
+            'target_percent' => $this->target_percent,
+            'source' => $this->source,
+            'rules' => $this->rules
+        ])->fresh();
 
         return $sla;
     }
@@ -181,7 +192,7 @@ abstract class SlaDefinitionAbstract extends Model implements SlaDefinitionInter
      */
     public function slas(): HasMany
     {
-        return $this->hasMany(static::sla_types()->{$this->type}->sla, 'sla_definition_id', 'id');
+        return $this->hasMany(Sla::class, 'sla_definition_id', 'id');
     }
 
     /**

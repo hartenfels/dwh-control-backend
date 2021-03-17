@@ -11,6 +11,11 @@ interface SlaInterface extends ModelInterface
 {
 
     /**
+     * @return SlaInterface|null
+     */
+    public function next(): ?SlaInterface;
+
+    /**
      * @return HasMany
      */
     public function progress(): HasMany;
@@ -36,6 +41,16 @@ interface SlaInterface extends ModelInterface
     public function progress_first_late_achieved(): belongsTo;
 
     /**
+     * @return HasMany
+     */
+    public function achievement_conditions(): HasMany;
+
+    /**
+     * @return $this
+     */
+    public function fetchProgress(): self;
+
+    /**
      * @param CarbonInterface $time
      * @param float $progress_percent
      * @param string $source
@@ -47,9 +62,10 @@ interface SlaInterface extends ModelInterface
     /**
      * @param CarbonInterface|null $time
      * @param bool $calculate
+     * @param bool $fetch
      * @return $this
      */
-    public function updateProgress(CarbonInterface $time = null, bool $calculate = true): self;
+    public function updateProgress(CarbonInterface $time = null, bool $calculate = true, bool $fetch = true): self;
 
     /**
      * @param CarbonInterface|null $time

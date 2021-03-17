@@ -25,6 +25,9 @@ class AutomicEtlExecution extends ElasticsearchModel implements EtlExecutionInte
         '_id', 'name', 'alias', 'etl_id', 'status', 'date', 'anomaly'
     ];
 
+    /**
+     * @var array|string[]|null
+     */
     protected ?array $transformable = [
         '_id', 'name', 'alias', 'etl_id',
         'date_activation', 'date_start', 'date_end', 'date_end_pp',
@@ -153,5 +156,16 @@ class AutomicEtlExecution extends ElasticsearchModel implements EtlExecutionInte
         });
 
         return $anomalies;
+    }
+
+    /**
+     * @return array
+     */
+    public function transform(): array
+    {
+        $transformed = parent::transform();
+        $transformed['status_text'] = $this->status >= 1900 && $this->status <= 1999 ? 'success' : 'error';
+
+        return $transformed;
     }
 }
