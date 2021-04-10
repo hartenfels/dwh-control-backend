@@ -1,7 +1,7 @@
 {
     "name": "matthenning/etl-monitor-backend",
     "type": "project",
-    "description": "ETL Monitor",
+    "description": "DWH Control",
     "keywords": [],
     "license": "GPL-3.0-only",
     "require": {
@@ -15,12 +15,13 @@
         "laravel/tinker": "^2.5",
         "livewire/livewire": "^2.0",
         "markrogoyski/math-php": "^1.10",
-        "matchory/elasticsearch": "^2.1",
+        "matchory/elasticsearch": "^2.2",
         "matthenning/eloquent-api-filter": "^2.0.1",
         "myclabs/php-enum": "^1.8",
         "nesbot/carbon": "^2.45"
     },
     "require-dev": {
+        "barryvdh/laravel-debugbar": "^3.5",
         "barryvdh/laravel-ide-helper": "^2.9",
         "facade/ignition": "^2.5",
         "fakerphp/faker": "^1.9.1",

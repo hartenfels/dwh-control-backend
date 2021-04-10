@@ -68,7 +68,7 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => \App\EtlMonitor\Common\Models\User::class,
+            'model' => \App\DwhControl\Common\Models\User::class,
         ],
 
         // 'users' => [

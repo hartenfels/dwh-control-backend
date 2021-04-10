@@ -2,7 +2,7 @@
 
 namespace App\Http;
 
-use App\EtlMonitor\Api\Http\Middleware\EnsureAuthenticated;
+use App\DwhControl\Api\Http\Middleware\EnsureAuthenticated;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 
