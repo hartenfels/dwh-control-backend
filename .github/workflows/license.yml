@@ -4,19 +4,21 @@ on: [
     pull_request
 ]
 jobs:
-  validate-licenses:
+  licensed:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@main
       - uses: php-actions/composer@v5
-      - uses: ./
+      - name: Run setup-licensed
+        uses: ./
         with:
           version: '2.x'
           github_token: ${{ secrets.GITHUB_TOKEN }}
-      - run: licensed cache
+
       - uses: jonabc/licensed-ci@v1.5.3
         with:
           workflow: branch
           github_token: ${{ secrets.GITHUB_TOKEN }}
           cleanup_on_success: 'true'
+
       - run: licensed status
