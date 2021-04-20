@@ -1,21 +1,23 @@
-name: License
-on: [
-    push,
-    pull_request
-]
+name: "Update and check dependency data"
+on: [ push, pull_request ]
 jobs:
   licensed:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@main
-      - uses: php-actions/composer@v5
+      - uses: actions/checkout@v1
+        with:
+          ref: ${{github.ref}} # checkout branch not SHA
+
+      - run: npm install --production
+
       - name: Run setup-licensed
         uses: ./
         with:
           version: '2.x'
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: jonabc/licensed-ci@v1.5.3
+      - run: licensed cache
+      - uses: jonabc/licensed-ci@v1
         with:
           workflow: branch
           github_token: ${{ secrets.GITHUB_TOKEN }}
