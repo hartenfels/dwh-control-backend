@@ -1,9 +1,9 @@
 {
-    "name": "matthenning/etl-monitor-backend",
+    "name": "matthenning/dwh-control-backend",
     "type": "project",
     "description": "DWH Control",
     "keywords": [],
-    "license": "GPL-3.0-only",
+    "license": "MIT",
     "require": {
         "php": "^8.0",
         "fideloper/proxy": "^4.4",
