@@ -7,14 +7,10 @@ jobs:
   validate-licenses:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-      - name: Copy .env
-        run: php -r "file_exists('.env') || copy('.env.example', '.env');"
-      - name: Install Composer Dependencies
-        run: composer install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist
-      - name: Generate key
-        run: php artisan key:generate
-      - name: Licensed CI
-        uses: jonabc/licensed-ci@v1.5.3
+      - uses: actions/checkout@main
+      - uses: jonabc/setup-licensed@v1
         with:
+          version: '2.x'
           github_token: ${{ secrets.GITHUB_TOKEN }}
+      - run: composer install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist
+      - run: licensed list
