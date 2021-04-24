@@ -22,9 +22,9 @@ interface EtlDefinitionInterface extends ModelInterface
 
     /**
      * @param string|null $field
-     * @return EtlExecutionInterface
+     * @return EtlExecutionInterface|null
      */
-    public function getLatestExecution(?string $field = 'date.end_pp'): EtlExecutionInterface;
+    public function getLatestExecution(?string $field = 'date.end_pp'): ?EtlExecutionInterface;
 
     /**
      * @param CarbonInterface $from

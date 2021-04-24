@@ -47,6 +47,51 @@ abstract class EtlDefinitionAbstract extends Model implements EtlDefinitionInter
     }
 
     /**
+     * @return EtlDefinitionInterface
+     */
+    public function updateFromExecution(): EtlDefinitionInterface
+    {
+        if (!$this->update_from_execution) return $this;
+
+        $execution = $this->getLatestExecution();
+
+        if (is_null($execution)) return $this;
+
+        foreach (config('dwh_control.etl_execution_mapping.' . static::$type . '.fields', []) as $d=>$e) {
+            $this->$d = $execution->$e;
+        }
+
+        $references_field = config('dwh_control.etl_execution_mapping.' . static::$type . '.depends_on.references_field');
+        $depends_on_field = config('dwh_control.etl_execution_mapping.' . static::$type . '.depends_on.depends_on_field');
+
+        if (!is_null($execution->$depends_on_field)) {
+            $execution_type = static::etl_types()->{static::$type}->execution;
+
+            $depends_on_ids = is_array($execution->$depends_on_field) ? $execution->$depends_on_field : [$execution->$depends_on_field];
+            $depends_on_executions = $execution_type::query()->whereIn($references_field, $depends_on_ids)->get();
+
+            if ($depends_on_executions->count() < 1) {
+                $this->depends_on()->sync([]);
+            } else {
+                $etl_id_field = config('dwh_control.etl_execution_mapping.' . static::$type . '.fields.etl_id');
+                $etl_ids = $depends_on_executions->map(function ($e) use ($etl_id_field) {
+                    return $e->$etl_id_field;
+                });
+
+                $depends_on_definitions = static::query()->whereIn('etl_id', $etl_ids)->get();
+
+                $this->depends_on()->sync($depends_on_definitions->map(fn ($d) => $d->id));
+            }
+        } else {
+            $this->depends_on()->sync([]);
+        }
+
+        $this->save();
+
+        return $this->fresh();
+    }
+
+    /**
      * @return EtlDefinitionStatistic
      */
     public function calculateStatistic(): EtlDefinitionStatistic
@@ -112,7 +157,7 @@ abstract class EtlDefinitionAbstract extends Model implements EtlDefinitionInter
     #[PivotAttributeNames('etl_definition_id', 'dependson_etl_definition_id')]
     public function depends_on(): BelongsToMany
     {
-        return $this->belongsToMany(EtlDefinition::class, 'dwh_control_etl__etl_definitions_dependson', 'etl_definition_id', 'dependson_etl_definition_id');
+        return $this->belongsToMany(EtlDefinition::class, 'dwh_control_etl__etl_definitions_dependson_pivot', 'etl_definition_id', 'dependson_etl_definition_id');
     }
 
     /**

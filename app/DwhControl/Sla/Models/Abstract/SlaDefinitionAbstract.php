@@ -2,6 +2,8 @@
 
 namespace App\DwhControl\Sla\Models\Abstract;
 
+use App\DwhControl\Common\Attributes\PivotAttributeNames;
+use App\DwhControl\Common\Attributes\PivotModelName;
 use App\DwhControl\Common\Models\Interfaces\SearchableInterface;
 use App\DwhControl\Common\Models\Model;
 use App\DwhControl\Common\Transfer\AutocompleteResult;
@@ -13,11 +15,13 @@ use App\DwhControl\Sla\Models\Sla;
 use App\DwhControl\Sla\Models\SlaDefinition;
 use App\DwhControl\Sla\Models\SlaDefinitionLifecycle;
 use App\DwhControl\Sla\Models\SlaDefinitionStatistic;
+use App\DwhControl\Sla\Models\SlaDefinitionTag;
 use App\DwhControl\Sla\Models\WeeklyTimerange;
 use App\DwhControl\Sla\Traits\SlaTypes;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Collection;
@@ -94,6 +98,16 @@ abstract class SlaDefinitionAbstract extends Model implements SlaDefinitionInter
     }
 
     /**
+     * @return BelongsToMany
+     */
+    #[PivotModelName('SlaDefinitionTagsPivot')]
+    #[PivotAttributeNames('sla_definition_id', 'tag_id')]
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(SlaDefinitionTag::class, 'dwh_control_sla__sla_definition_tags__tags_pivot', 'sla_definition_id', 'tag_id');
+    }
+
+    /**
      * @return Collection
      */
     public function timeranges(): Collection
@@ -155,7 +169,8 @@ abstract class SlaDefinitionAbstract extends Model implements SlaDefinitionInter
                 (object)['definition' => $d, 'statistic' => $d->statistic],
                 $d->model(),
                 $d->entity(),
-                $d->getIcon()
+                $d->getIcon(),
+                $d->tags->toArray()
             ));
         });
 

@@ -41,7 +41,8 @@ class SetupCommand extends Command
         echo '# Setting up defaults ...' . PHP_EOL;
         $defaults = [
             'Sla' => [
-                'sla_definition_lifecycles'
+                'sla_definition_lifecycles',
+                'sla_definition_tags'
             ]
         ];
 

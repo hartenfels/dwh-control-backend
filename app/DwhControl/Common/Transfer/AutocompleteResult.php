@@ -14,6 +14,7 @@ class AutocompleteResult
      * @param string $model
      * @param string $entity
      * @param string $icon
+     * @param array $tags
      */
     public function __construct(
         public int $id,
@@ -22,7 +23,8 @@ class AutocompleteResult
         public object $info,
         public string $model,
         public string $entity,
-        public string $icon
+        public string $icon,
+        public array $tags = []
     ) {}
 
 }

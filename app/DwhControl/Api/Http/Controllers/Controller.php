@@ -19,6 +19,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\Access\Response;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
@@ -172,10 +173,10 @@ class Controller extends \App\Http\Controllers\Controller
     }
 
     /**
-     * @param EloquentBuilder|QueryBuilder|Query $query
+     * @param EloquentBuilder|QueryBuilder|Query|Relation $query
      * @return JsonResponse
      */
-    protected function respondFiltered(EloquentBuilder|QueryBuilder|Query $query): JsonResponse
+    protected function respondFiltered(EloquentBuilder|QueryBuilder|Query|Relation $query): JsonResponse
     {
         $results = $this->filterApiRequest($this->request, $query)->get();
 
@@ -183,11 +184,23 @@ class Controller extends \App\Http\Controllers\Controller
     }
 
     /**
-     * @param EloquentBuilder|QueryBuilder|Query $query
+     * @param EloquentBuilder|QueryBuilder|Query|Relation $query
      * @param callable|null $model_retrieval_service
      * @return JsonResponse
      */
-    protected function respondFilteredAndPaginated(EloquentBuilder|QueryBuilder|Query $query, callable $model_retrieval_service = null): JsonResponse
+    protected function respondPaginated(EloquentBuilder|QueryBuilder|Query|Relation $query, callable $model_retrieval_service = null): JsonResponse
+    {
+        $results = $this->paginateModels($query);
+
+        return $this->respondWithPaginatedModels($results, $model_retrieval_service);
+    }
+
+    /**
+     * @param EloquentBuilder|QueryBuilder|Query|Relation $query
+     * @param callable|null $model_retrieval_service
+     * @return JsonResponse
+     */
+    protected function respondFilteredAndPaginated(EloquentBuilder|QueryBuilder|Query|Relation $query, callable $model_retrieval_service = null): JsonResponse
     {
         $query = $this->filterApiRequest($this->request, $query);
         $results = $this->paginateModels($query);
@@ -196,10 +209,10 @@ class Controller extends \App\Http\Controllers\Controller
     }
 
     /**
-     * @param EloquentBuilder|QueryBuilder|Query $query
+     * @param EloquentBuilder|QueryBuilder|Query|Relation $query
      * @return LengthAwarePaginator
      */
-    public function paginateModels(EloquentBuilder|QueryBuilder|Query $query): LengthAwarePaginator
+    public function paginateModels(EloquentBuilder|QueryBuilder|Query|Relation $query): LengthAwarePaginator
     {
         if ($this->request->has('per_page')) {
             $perPage = ($pp = (int)$this->request->get('per_page')) == -1 ? $query->count() : $pp;

@@ -12,6 +12,7 @@ use App\DwhControl\Sla\Models\DeliverableSla;
 use App\DwhControl\Sla\Models\DeliverableSlaDefinition;
 use App\DwhControl\Sla\Models\Interfaces\SlaDefinitionInterface;
 use App\DwhControl\Sla\Models\Interfaces\SlaInterface;
+use App\DwhControl\Sla\Models\SlaDefinitionTag;
 use App\DwhControl\Sla\Services\SlaCreationService;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
@@ -83,10 +84,18 @@ class SeedCommand extends Command
                         ]
                     ], '500-' . $run_id);
 
+                    $predecessors = [];
+                    for ($i = 0; $i < 5; $i++) {
+                        $predecessors[] = AutomicEtlDefinition::query()->inRandomOrder()->first()->getLatestExecution()?->idnr;
+                    }
+                    $exec->predecessor_idnr = $predecessors;
+                    $exec->save();
+                    /*
                     if ($cnt = count($prev_tier_executions) > 0) {
                         $exec->predecessor_idnr = $prev_tier_executions[random_int(0, $cnt - 1)]->idnr;
                         $exec->save();
                     }
+                    */
                     $executions[] = $exec;
                 });
 
@@ -102,6 +111,11 @@ class SeedCommand extends Command
         /** @var Collection<EtlDefinitionInterface> $etls */
         $etls = EtlDefinition::all();
 
+        echo "Seeding SLA definition tags" . PHP_EOL;
+        SlaDefinitionTag::create(['name' => 'official']);
+        SlaDefinitionTag::create(['name' => 'report relevant']);
+        SlaDefinitionTag::create(['name' => 'pending QA']);
+
         echo "Seeding SLA definitions" . PHP_EOL;
         for ($i = 0; $i < (int)$this->option('sla_definitions') / 2; $i++) {
             $f = Factory::create();
@@ -115,19 +129,24 @@ class SeedCommand extends Command
                     'etl_id' => $etl->etl_id
                 ];
             }
-            DeliverableSlaDefinition::create([
+
+            $d = DeliverableSlaDefinition::create([
                 'name' => $f->name,
                 'lifecycle_id' => random_int(1, 3),
                 'source' => 'etl',
                 'rules' => $rules
             ]);
 
+            $d->tags()->sync([SlaDefinitionTag::query()->inRandomOrder()->first()->id]);
+
             $f = Factory::create();
-            AvailabilitySlaDefinition::create([
+            $d = AvailabilitySlaDefinition::create([
                 'name' => $f->name,
                 'lifecycle_id' => random_int(1, 3),
                 'target_percent' => random_int(80, 100)
             ]);
+
+            $d->tags()->sync([SlaDefinitionTag::query()->inRandomOrder()->first()->id]);
         }
 
         echo "Seeding timeranges" . PHP_EOL;

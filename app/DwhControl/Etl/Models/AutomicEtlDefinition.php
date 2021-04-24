@@ -46,9 +46,9 @@ class AutomicEtlDefinition extends EtlDefinition
 
     /**
      * @param string|null $field
-     * @return EtlExecutionInterface
+     * @return EtlExecutionInterface|null
      */
-    public function getLatestExecution(?string $field = 'date.end_pp'): EtlExecutionInterface
+    public function getLatestExecution(?string $field = 'date.end_pp'): ?EtlExecutionInterface
     {
         return AutomicEtlExecution::where('etl_id.keyword', $this->etl_id)
             ->orderBy($field, 'desc')

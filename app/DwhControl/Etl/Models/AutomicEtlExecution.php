@@ -8,7 +8,6 @@ use App\DwhControl\Etl\Models\Interfaces\EtlExecutionInterface;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
-use JetBrains\PhpStorm\Pure;
 
 class AutomicEtlExecution extends ElasticsearchModel implements EtlExecutionInterface
 {
@@ -148,11 +147,12 @@ class AutomicEtlExecution extends ElasticsearchModel implements EtlExecutionInte
      */
     public function getAnomaly(): Collection
     {
-        if (is_null($this->anomalies)) return new Collection();
+        if (is_null($this->anomaly)) return new Collection();
 
         $anomalies = new Collection();
-        collect(array_keys($this->anomalies))->each(function (string $anomaly_type) use (&$anomalies) {
-            $anomalies->push(new Anomaly($anomaly_type, $this->anomalies[$anomaly_type]));
+        collect(array_keys($this->anomaly))->each(function (string $anomaly_type) use (&$anomalies) {
+            if (is_null($this->anomaly[$anomaly_type])) return;
+            $anomalies->push(new Anomaly($anomaly_type, $this->anomaly[$anomaly_type]));
         });
 
         return $anomalies;

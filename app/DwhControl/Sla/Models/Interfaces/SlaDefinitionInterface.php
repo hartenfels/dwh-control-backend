@@ -4,6 +4,7 @@ namespace App\DwhControl\Sla\Models\Interfaces;
 
 use App\DwhControl\Common\Models\Interfaces\ModelInterface;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 
@@ -24,6 +25,11 @@ interface SlaDefinitionInterface extends ModelInterface
      * @return HasMany
      */
     public function weekly_timeranges(): HasMany;
+
+    /**
+     * @return BelongsToMany
+     */
+    public function tags(): BelongsToMany;
 
     /**
      * @param TimerangeInterface $timerange
