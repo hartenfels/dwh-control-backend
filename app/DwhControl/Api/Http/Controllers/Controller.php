@@ -9,6 +9,8 @@ use App\DwhControl\Api\Http\Controllers\Actions\DestroyAction;
 use App\DwhControl\Api\Http\Controllers\Actions\StoreAction;
 use App\DwhControl\Api\Http\Controllers\Actions\UpdateAction;
 use App\DwhControl\Api\Http\Requests\Request;
+use App\DwhControl\Common\Attributes\PivotAttributeNames;
+use App\DwhControl\Common\Attributes\PivotModelName;
 use App\DwhControl\Common\Enum\HttpStatusCodeEnum;
 use App\DwhControl\Common\Exceptions\ModelNotFoundException;
 use App\DwhControl\Common\Models\ElasticsearchModel;
@@ -220,6 +222,7 @@ class Controller extends \App\Http\Controllers\Controller
     /**
      * @param Collection|array $model_transformed
      * @return Collection
+     * @throws ReflectionException
      */
     protected function getSeparateModelsFromRelations(Collection|array $model_transformed): Collection
     {
@@ -236,10 +239,23 @@ class Controller extends \App\Http\Controllers\Controller
 
                     $models->add($m);
 
-                    $pivot_model = strcmp($model_transformed['_model'], $m['_model']) < 0 ?
-                        $model_transformed['_model'] . $m['_model'] :
-                        $m['_model'] . $model_transformed['_model'];
-                    $pivot_model .= 'Pivot';
+                    $reflection_class = new ReflectionClass($m['_model_fqn']);
+                    if (count($a = $reflection_class->getMethod($name)->getAttributes(PivotModelName::class)) > 0) {
+                        $pivot_model = $a[0]->newInstance()->pivot_name;
+                    } else {
+                        $pivot_model = strcmp($model_transformed['_model'], $m['_model']) < 0 ?
+                            $model_transformed['_model'] . $m['_model'] :
+                            $m['_model'] . $model_transformed['_model'];
+                        $pivot_model .= 'Pivot';
+                    }
+
+                    if (count($a = $reflection_class->getMethod($name)->getAttributes(PivotAttributeNames::class)) > 0) {
+                        $pivot_key = $a[0]->newInstance()->key;
+                        $pivot_foreign_key = $a[0]->newInstance()->foreign_key;
+                    } else {
+                        $pivot_key = $model_transformed['_fk'];
+                        $pivot_foreign_key = $m['_fk'];
+                    }
 
                     if ($model_transformed['_relations'][$name] == 'BelongsToMany') {
                         // Many to Many relation -> we need to generate intermediate Models
@@ -247,8 +263,8 @@ class Controller extends \App\Http\Controllers\Controller
                             '_model' => $pivot_model,
                             '_meta' => ['is_virtual' => true],
                             'id' => '_pivot-' . $model_transformed['id'] . '-' . $m['_model'] . '-' . $m['id'],
-                            $model_transformed['_fk'] => $model_transformed['id'],
-                            $m['_fk'] => $m['id']
+                            $pivot_key => $model_transformed['id'],
+                            $pivot_foreign_key => $m['id']
                         ]);
                     } else if ($model_transformed['_relations'][$name] == 'MorphToMany') {
                         // Many to Many Polymorphic relation -> we need to generate intermediate Models

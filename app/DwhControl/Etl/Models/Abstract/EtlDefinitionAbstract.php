@@ -2,6 +2,8 @@
 
 namespace App\DwhControl\Etl\Models\Abstract;
 
+use App\DwhControl\Common\Attributes\PivotAttributeNames;
+use App\DwhControl\Common\Attributes\PivotModelName;
 use App\DwhControl\Common\Models\Interfaces\SearchableInterface;
 use App\DwhControl\Common\Models\Model;
 use App\DwhControl\Common\Transfer\AutocompleteResult;
@@ -9,8 +11,8 @@ use App\DwhControl\Etl\Models\EtlDefinition;
 use App\DwhControl\Etl\Models\EtlDefinitionStatistic;
 use App\DwhControl\Etl\Models\Interfaces\EtlDefinitionInterface;
 use App\DwhControl\Etl\Traits\EtlTypes;
-use App\DwhControl\Sla\Models\Interfaces\SlaProgressInterface;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Collection;
 
@@ -62,7 +64,6 @@ abstract class EtlDefinitionAbstract extends Model implements EtlDefinitionInter
         return $statistic->calculate();
     }
 
-
     /**
      * @param string $search_text
      * @return Collection
@@ -102,6 +103,16 @@ abstract class EtlDefinitionAbstract extends Model implements EtlDefinitionInter
     public function statistic(): HasOne
     {
         return $this->hasOne(EtlDefinitionStatistic::class, 'etl_definition_id');
+    }
+
+    /**
+     * @return BelongsToMany
+     */
+    #[PivotModelName('EtlDefinitionDependsonPivot')]
+    #[PivotAttributeNames('etl_definition_id', 'dependson_etl_definition_id')]
+    public function depends_on(): BelongsToMany
+    {
+        return $this->belongsToMany(EtlDefinition::class, 'dwh_control_etl__etl_definitions_dependson', 'etl_definition_id', 'dependson_etl_definition_id');
     }
 
     /**

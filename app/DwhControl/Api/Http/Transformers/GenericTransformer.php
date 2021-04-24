@@ -22,6 +22,7 @@ class GenericTransformer extends Transformer
             'id' => $model->getId(),
             '_icon' => $model->getIcon(),
             '_model' => $model::model(),
+            '_model_fqn' => get_class($model),
             '_entity' => $model->entity(),
             '_fk' => $model->fk(),
             '_self' => $model->self(),

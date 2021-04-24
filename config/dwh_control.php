@@ -13,5 +13,18 @@ return [
     'searchable_models' => [
         \App\DwhControl\Sla\Models\SlaDefinition::class,
         \App\DwhControl\Etl\Models\EtlDefinition::class
+    ],
+
+    'etl_execution_mapping' => [
+        'automic' => [
+            'fields' => [ // definition => execution
+                'etl_id' => 'etl_id',
+                'name' => 'alias'
+            ],
+            'depends_on' => [
+                'depends_on_field' => 'predecessor_idnr',
+                'references_field' => 'idnr'
+            ]
+        ]
     ]
 ];

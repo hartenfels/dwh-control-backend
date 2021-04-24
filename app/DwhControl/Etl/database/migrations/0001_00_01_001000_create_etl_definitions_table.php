@@ -20,6 +20,8 @@ class CreateEtlDefinitionsTable extends Migration
             $table->string('etl_id')->unique();
             $table->string('name');
 
+            $table->boolean('update_from_execution')->nullable()->default(false);
+
             $table->timestamps();
         });
     }

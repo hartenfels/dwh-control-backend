@@ -84,7 +84,7 @@ class SeedCommand extends Command
                     ], '500-' . $run_id);
 
                     if ($cnt = count($prev_tier_executions) > 0) {
-                        $exec->predecessor_id = $prev_tier_executions[random_int(0, $cnt - 1)]->getId();
+                        $exec->predecessor_idnr = $prev_tier_executions[random_int(0, $cnt - 1)]->idnr;
                         $exec->save();
                     }
                     $executions[] = $exec;

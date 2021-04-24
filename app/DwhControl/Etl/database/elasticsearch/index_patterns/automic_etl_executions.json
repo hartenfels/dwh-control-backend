@@ -30,7 +30,10 @@
             "etl_id": {
                 "type": "keyword"
             },
-            "predecessor_id": {
+            "idnr": {
+                "type": "keyword"
+            },
+            "predecessor_idnr": {
                 "type": "keyword"
             },
             "status": {

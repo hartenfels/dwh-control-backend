@@ -14,11 +14,17 @@ interface EtlDefinitionInterface extends ModelInterface
     /**
      * @param CarbonInterface $from
      * @param CarbonInterface $to
-     * @param string $field
-     * @param int $limit
+     * @param string|null $field
+     * @param int|null $limit
      * @return Collection<EtlExecutionInterface>
      */
-    public function getExecutions(CarbonInterface $from, CarbonInterface $to, $field = null, $limit = 28): Collection;
+    public function getExecutions(CarbonInterface $from, CarbonInterface $to, ?string $field = null, ?int $limit = 28): Collection;
+
+    /**
+     * @param string|null $field
+     * @return EtlExecutionInterface
+     */
+    public function getLatestExecution(?string $field = 'date.end_pp'): EtlExecutionInterface;
 
     /**
      * @param CarbonInterface $from
@@ -30,14 +36,13 @@ interface EtlDefinitionInterface extends ModelInterface
     public function getSuccessfulExecutions(CarbonInterface $from, CarbonInterface $to, $field = null, $limit = 28): Collection;
 
     /**
-     * @param Query $query
-     * @return Query
-     */
-    public function scopeSuccessful(Query $query): Query;
-
-    /**
      * @return HasOne
      */
     public function statistic(): HasOne;
+
+    /**
+     * @return $this
+     */
+    public function updateFromExecution(): self;
 
 }

@@ -23,7 +23,7 @@ abstract class TimerangeAbstract extends Model implements TimerangeInterface
      * @var string[]
      */
     protected $fillable = [
-        'type', 'anchor', 'range_start', 'range_end', 'error_margin_minutes'
+        'type', 'anchor', 'range_start', 'range_end', 'error_margin_minutes', 'sla_definition_id'
     ];
 
     /**
