@@ -45,7 +45,7 @@ class EtlDefinitionStatistic extends Model implements  EtlDefinitionStatisticInt
     public function calculateHistory(bool $save = true): self
     {
         $execution_history = [];
-        $this->definition->getExecutions(Carbon::today()->subWeeks(4), Carbon::today(), limit: 28)
+        $this->definition->getExecutions(Carbon::today()->subWeeks(4), Carbon::today()->endOfDay(), limit: 28)
             ->each(function (EtlExecutionInterface $execution) use (&$execution_history) {
                 $execution_history[] = (object)[
                     'start' => $execution->getStart(),

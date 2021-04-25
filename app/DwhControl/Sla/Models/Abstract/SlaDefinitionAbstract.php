@@ -16,6 +16,7 @@ use App\DwhControl\Sla\Models\SlaDefinition;
 use App\DwhControl\Sla\Models\SlaDefinitionLifecycle;
 use App\DwhControl\Sla\Models\SlaDefinitionStatistic;
 use App\DwhControl\Sla\Models\SlaDefinitionTag;
+use App\DwhControl\Sla\Models\SlaStatistic;
 use App\DwhControl\Sla\Models\WeeklyTimerange;
 use App\DwhControl\Sla\Traits\SlaTypes;
 use Carbon\Carbon;
@@ -25,8 +26,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Collection;
-use MathPHP\Exception\BadDataException;
-use MathPHP\Exception\OutOfBoundsException;
 
 abstract class SlaDefinitionAbstract extends Model implements SlaDefinitionInterface, SearchableInterface
 {
@@ -100,7 +99,7 @@ abstract class SlaDefinitionAbstract extends Model implements SlaDefinitionInter
     /**
      * @return BelongsToMany
      */
-    #[PivotModelName('SlaDefinitionTagsPivot')]
+    #[PivotModelName('SlaDefinitionTagPivot')]
     #[PivotAttributeNames('sla_definition_id', 'tag_id')]
     public function tags(): BelongsToMany
     {
@@ -125,8 +124,6 @@ abstract class SlaDefinitionAbstract extends Model implements SlaDefinitionInter
 
     /**
      * @return $this
-     * @throws BadDataException
-     * @throws OutOfBoundsException
      */
     public function calculateStatistics(): self
     {

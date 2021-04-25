@@ -11,6 +11,7 @@ use App\DwhControl\Etl\Models\EtlDefinition;
 use App\DwhControl\Etl\Models\EtlDefinitionStatistic;
 use App\DwhControl\Etl\Models\Interfaces\EtlDefinitionInterface;
 use App\DwhControl\Etl\Traits\EtlTypes;
+use App\DwhControl\Sla\Models\SlaDefinition;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -44,6 +45,16 @@ abstract class EtlDefinitionAbstract extends Model implements EtlDefinitionInter
     public function entity(): string
     {
         return static::$type . '_' . parent::entity();
+    }
+
+    /**
+     * @return BelongsToMany
+     */
+    #[PivotModelName('EtlDefinitionAffectedSlaPivot')]
+    #[PivotAttributeNames('etl_definition_id', 'sla_definition_id')]
+    public function affected_slas(): BelongsToMany
+    {
+        return $this->belongsToMany(SlaDefinition::class, 'dwh_control_sla__sla_definition_affecting_etls', 'etl_definition_id', 'sla_definition_id');
     }
 
     /**

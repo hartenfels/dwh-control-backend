@@ -252,7 +252,7 @@ class Controller extends \App\Http\Controllers\Controller
 
                     $models->add($m);
 
-                    $reflection_class = new ReflectionClass($m['_model_fqn']);
+                    $reflection_class = new ReflectionClass($model_transformed['_model_fqn']);
                     if (count($a = $reflection_class->getMethod($name)->getAttributes(PivotModelName::class)) > 0) {
                         $pivot_model = $a[0]->newInstance()->pivot_name;
                     } else {

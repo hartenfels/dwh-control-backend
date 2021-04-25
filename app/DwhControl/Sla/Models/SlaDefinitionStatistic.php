@@ -50,11 +50,11 @@ class SlaDefinitionStatistic extends Model
      */
     public function calculateHistory(CarbonInterface $day = null, int $days = 28, bool $save = true): self
     {
-        $day = $day ?? Carbon::now();
+        $day = $day ?? Carbon::today()->endOfDay();
         /** @var Collection<SlaInterface> $slas */
         $slas = $this->definition->slas()
-            ->where('range_start', '<', $day)
-            ->where('range_start', '>=', (clone $day)->subDays($days)->startOfDay())
+            ->where('range_start', '<=', $day)
+            ->where('range_start', '>', (clone $day)->subDays($days)->startOfDay())
             ->orderBy('range_start', 'desc')
             ->get();
 

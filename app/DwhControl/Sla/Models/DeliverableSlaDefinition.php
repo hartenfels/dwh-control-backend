@@ -2,8 +2,12 @@
 
 namespace App\DwhControl\Sla\Models;
 
+use App\DwhControl\Common\Attributes\PivotAttributeNames;
+use App\DwhControl\Common\Attributes\PivotModelName;
+use App\DwhControl\Etl\Models\EtlDefinition;
+use App\DwhControl\Etl\Services\EtlDependencyResolverService;
 use App\DwhControl\Sla\Models\Abstract\SlaDefinitionAbstract;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * App\DwhControl\Sla\Models\DeliverableSlaDefinition
@@ -54,5 +58,37 @@ class DeliverableSlaDefinition extends SlaDefinitionAbstract
     public function getIcon(): string
     {
         return 'mdi-truck-check-outline';
+    }
+
+    /**
+     * @return BelongsToMany
+     */
+    #[PivotModelName('EtlDefinitionAffectedSlaPivot')]
+    #[PivotAttributeNames('etl_definition_id', 'sla_definition_id')]
+    public function affecting_etls(): BelongsToMany
+    {
+        return $this->belongsToMany(EtlDefinition::class, 'dwh_control_sla__sla_definition_affecting_etls', 'etl_definition_id', 'sla_definition_id');
+    }
+
+    /**
+     * @return $this
+     */
+    public function calculateAffectingEtls(): self
+    {
+        if ($this->source != 'etl') return $this;
+
+        $etl_ids = array_map(fn($rule) => $rule['etl_id'], $this->rules['etls']);
+        $etl_definitions = EtlDefinition::query()->whereIn('etl_id', array_values($etl_ids))->get();
+
+        $etl_definitions->each(function (EtlDefinition $d) use ($etl_definitions) {
+            list ($_, $flat) = EtlDependencyResolverService::make($d, config('dwh_control.sla_calculate_affecting_etls.depth', 3))->invoke();
+            $flat->each(function (EtlDefinition $dep) use ($etl_definitions) {
+                $etl_definitions->push($dep);
+            });
+        });
+
+        $this->affecting_etls()->sync($etl_definitions->map(fn ($d) => $d->id)->toArray());
+
+        return $this;
     }
 }

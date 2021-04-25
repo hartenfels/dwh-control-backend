@@ -2,7 +2,6 @@
 
 namespace App\DwhControl\Sla\Models;
 
-use App\DwhControl\Sla\Models\Abstract\SlaAbstract;
 use App\DwhControl\Sla\Models\Interfaces\SlaInterface;
 use App\DwhControl\Sla\Services\SlaProgressFetcherService;
 use Carbon\Carbon;

@@ -4,6 +4,7 @@ use App\DwhControl\Api\Http\Route;
 use App\DwhControl\Sla\Models\SlaDefinition;
 
 Route::middleware('api')->prefix('api/v1/sla')->group(function () {
+    Route::resource('sla_definitions', \App\DwhControl\Sla\Http\Controllers\SlaDefinitionController::class);
     Route::resource('slas', \App\DwhControl\Sla\Http\Controllers\SlaController::class);
     Route::resource('deliverable_sla_definitions', \App\DwhControl\Sla\Http\Controllers\DeliverableSlaDefinitionController::class);
     Route::resource('deliverable_slas', \App\DwhControl\Sla\Http\Controllers\DeliverableSlaController::class);
