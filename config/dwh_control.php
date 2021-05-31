@@ -3,7 +3,7 @@
 return [
     'sla_statistic_history_count' => 14,
     'sla_calculate_affecting_etls' => [
-        'depth' => 3
+        'depth' => 5
     ],
     'availability_sla_progress_history_bucket_size_min' => 30,
 

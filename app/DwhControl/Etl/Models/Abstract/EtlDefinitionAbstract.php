@@ -54,7 +54,7 @@ abstract class EtlDefinitionAbstract extends Model implements EtlDefinitionInter
     #[PivotAttributeNames('etl_definition_id', 'sla_definition_id')]
     public function affected_slas(): BelongsToMany
     {
-        return $this->belongsToMany(SlaDefinition::class, 'dwh_control_sla__sla_definition_affecting_etls', 'etl_definition_id', 'sla_definition_id');
+        return $this->belongsToMany(SlaDefinition::class, 'dwh_control_sla__sla_definition_affecting_etls', 'sla_definition_id', 'etl_definition_id');
     }
 
     /**

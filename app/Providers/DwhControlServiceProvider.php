@@ -5,6 +5,8 @@ namespace App\Providers;
 use App\DwhControl\Common\Console\SeedCommand;
 use App\DwhControl\Common\Console\SetupCommand;
 use App\DwhControl\Common\Models\User;
+use App\DwhControl\Etl\Console\UpdateDefinitionsFromExecutionsCommand;
+use App\DwhControl\Sla\Console\CalculateAffectingEtlsCommand;
 use App\DwhControl\Sla\Console\CalculateCommand;
 use App\DwhControl\Sla\Console\CreateCommand;
 use Illuminate\Support\Facades\Gate;
@@ -39,8 +41,12 @@ class DwhControlServiceProvider extends ServiceProvider
             $this->commands([
                 SetupCommand::class,
                 SeedCommand::class,
+
                 CreateCommand::class,
-                CalculateCommand::class
+                CalculateCommand::class,
+                CalculateAffectingEtlsCommand::class,
+
+                UpdateDefinitionsFromExecutionsCommand::class
             ]);
         }
     }

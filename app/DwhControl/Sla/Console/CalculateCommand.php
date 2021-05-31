@@ -17,7 +17,7 @@ class CalculateCommand extends Command
     /**
      * @var string
      */
-    protected $signature = 'dwh-control:sla-calculate';
+    protected $signature = 'dwh-control:sla_calculate';
 
     /**
      * @var string

@@ -15,7 +15,7 @@ class CreateCommand extends Command
     /**
      * @var string
      */
-    protected $signature = 'dwh-control:sla-create';
+    protected $signature = 'dwh-control:sla_create';
 
     /**
      * @var string

@@ -12,7 +12,7 @@ class CalculateAffectingEtlsCommand extends Command
     /**
      * @var string
      */
-    protected $signature = 'dwh-control:sla-calculate-affecting-etls';
+    protected $signature = 'dwh-control:sla_calculate-affecting-etls';
 
     /**
      * @var string

@@ -46,7 +46,9 @@ class SeedCommand extends Command
         for ($i = 0; $i < 4; $i++) {
             for ($j = 0; $j < (int)$this->option('etl_definitions')/4; $j++) {
                 $f = Factory::create();
-                $n = $f->domainName . '/' . $f->domainWord . '.' . $f->iban();
+                $n = $f->domainName . '/' .
+                    $f->domainWord . '.' . Factory::create()->domainWord . '.' . Factory::create()->domainWord . '/' .
+                    Factory::create()->domainWord . '.' . Factory::create()->domainWord;
                 $definitions_tiers[$i][] = AutomicEtlDefinition::create([
                     'name' => $n,
                     'etl_id' => $n
@@ -122,7 +124,7 @@ class SeedCommand extends Command
             $rules = [
                 'etls' => []
             ];
-            for ($j = 0; $j < random_int(1, 4); $j++) {
+            for ($j = 0; $j < random_int(1, 3); $j++) {
                 $etl = $etls->get(random_int(0, $etls->count() - 1));
                 $rules['etls'][] = [
                     'id' => $etl->getId(),
@@ -131,7 +133,7 @@ class SeedCommand extends Command
             }
 
             $d = DeliverableSlaDefinition::create([
-                'name' => $f->name,
+                'name' => 'Solution - ' . $f->text(30),
                 'lifecycle_id' => random_int(1, 3),
                 'source' => 'etl',
                 'rules' => $rules
@@ -141,7 +143,7 @@ class SeedCommand extends Command
 
             $f = Factory::create();
             $d = AvailabilitySlaDefinition::create([
-                'name' => $f->name,
+                'name' => 'Availability - ' . $f->text(30),
                 'lifecycle_id' => random_int(1, 3),
                 'target_percent' => random_int(80, 100)
             ]);

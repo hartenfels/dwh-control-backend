@@ -75,13 +75,16 @@ class DeliverableSlaDefinition extends SlaDefinitionAbstract
      */
     public function calculateAffectingEtls(): self
     {
-        if ($this->source != 'etl') return $this;
+        if ($this->source != 'etl') {
+            $this->affecting_etls()->sync([]);
+            return $this;
+        }
 
         $etl_ids = array_map(fn($rule) => $rule['etl_id'], $this->rules['etls']);
         $etl_definitions = EtlDefinition::query()->whereIn('etl_id', array_values($etl_ids))->get();
 
         $etl_definitions->each(function (EtlDefinition $d) use ($etl_definitions) {
-            list ($_, $flat) = EtlDependencyResolverService::make($d, config('dwh_control.sla_calculate_affecting_etls.depth', 3))->invoke();
+            list($_, $flat) = EtlDependencyResolverService::make($d, config('dwh_control.sla_calculate_affecting_etls.depth', 5))->invoke();
             $flat->each(function (EtlDefinition $dep) use ($etl_definitions) {
                 $etl_definitions->push($dep);
             });
