@@ -147,7 +147,8 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model implements Mode
     {
         if (!config('app.debug')) return '';
 
-        Log::debug($this->getLogString($message, $trace ?? uniqid()));
+        $trace = $trace ?? uniqid();
+        Log::debug($this->getLogString($message, $trace));
 
         return $trace;
     }
@@ -159,7 +160,8 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model implements Mode
      */
     public function logNotice(string $message, ?string $trace = null): string
     {
-        Log::notice($this->getLogString($message, $trace ?? $trace = uniqid()));
+        $trace = $trace ?? $trace = uniqid();
+        Log::notice($this->getLogString($message, $trace));
 
         return $trace;
     }
@@ -171,7 +173,8 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model implements Mode
      */
     public function logInfo(string $message, ?string $trace = null): string
     {
-        Log::info($this->getLogString($message, $trace ?? $trace = uniqid()));
+        $trace = $trace ?? $trace = uniqid();
+        Log::info($this->getLogString($message, $trace));
 
         return $trace;
     }
@@ -183,7 +186,8 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model implements Mode
      */
     public function logWarning(string $message, ?string $trace = null): string
     {
-        Log::warning($this->getLogString($message, $trace ?? $trace = uniqid()));
+        $trace = $trace ?? $trace = uniqid();
+        Log::warning($this->getLogString($message, $trace));
 
         return $trace;
     }
@@ -195,7 +199,8 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model implements Mode
      */
     public function logCritical(string $message, ?string $trace = null): string
     {
-        Log::critical($this->getLogString($message, $trace ?? $trace = uniqid()));
+        $trace = $trace ?? $trace = uniqid();
+        Log::critical($this->getLogString($message, $trace));
 
         return $trace;
     }

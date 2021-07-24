@@ -13,5 +13,5 @@ function getCallingFunctionName(?int $object_id): string
     $class = isset($caller['class']) ? $caller['class'] : '*UNKNOWN*';
     $function = isset($caller['function']) ? $caller['function'] : '*unknown*';
 
-    return sprintf('%s[id:%s]::%s()', $object_id ?? '', $class, $function);
+    return sprintf('%s[id:%s]::%s()', $class, $object_id ?? '', $function);
 }

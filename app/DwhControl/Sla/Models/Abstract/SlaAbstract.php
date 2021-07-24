@@ -170,8 +170,8 @@ abstract class SlaAbstract extends Model implements SlaInterface
             ->save();
 
         $this->logDebug(sprintf('Fetched and processed SLA progress. intime: %s, first_achieved_in_time: %s, best_in_time: %s, late: %s, first_achieved_late: %s',
-            $progress_intime->progress_percent, $progress_first_achieved_in_time->progress_percent, $progress_best_in_time->progress_percent,
-            $progress_late->progress_percent, $progress_first_achieved_late->progress_percent));
+            $progress_intime?->progress_percent, $progress_first_achieved_in_time?->progress_percent, $progress_best_in_time?->progress_percent,
+            $progress_late?->progress_percent, $progress_first_achieved_late?->progress_percent));
 
         if ($calculate) $this->calculate($time);
 
