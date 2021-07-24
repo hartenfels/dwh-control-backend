@@ -137,6 +137,8 @@ abstract class SlaDefinitionAbstract extends Model implements SlaDefinitionInter
 
         $statistic->calculate();
 
+        $this->logDebug('Statistic calculated');
+
         return $this;
     }
 
@@ -195,6 +197,8 @@ abstract class SlaDefinitionAbstract extends Model implements SlaDefinitionInter
             'source' => $this->source,
             'rules' => $this->rules
         ])->fresh();
+
+        $this->logDebug(sprintf('Created SLA %s for timerange %s', $sla->id, $timerange->id));
 
         return $sla;
     }

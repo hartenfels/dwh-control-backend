@@ -66,7 +66,10 @@ abstract class EtlDefinitionAbstract extends Model implements EtlDefinitionInter
 
         $execution = $this->getLatestExecution();
 
-        if (is_null($execution)) return $this;
+        if (is_null($execution)) {
+            $this->logDebug(sprintf('Found no executions for ETL definition %s', $this->getId()));
+            return $this;
+        }
 
         foreach (config('dwh_control.etl_execution_mapping.' . static::$type . '.fields', []) as $d=>$e) {
             $this->$d = $execution->$e;

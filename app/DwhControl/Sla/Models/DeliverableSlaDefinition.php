@@ -92,6 +92,8 @@ class DeliverableSlaDefinition extends SlaDefinitionAbstract
 
         $this->affecting_etls()->sync($etl_definitions->map(fn ($d) => $d->id)->toArray());
 
+        $this->logDebug('Affecting ETLs calculated (Count: %s)', $etl_definitions->count());
+
         return $this;
     }
 }

@@ -38,6 +38,8 @@ class AvailabilitySlaStatistic extends SlaStatisticAbstract
         $this->calculateProgress();
         $this->calculateHistory();
 
+        $this->logDebug('SLA statistic calculated');
+
         return $this;
     }
 
@@ -61,6 +63,8 @@ class AvailabilitySlaStatistic extends SlaStatisticAbstract
         $this->progress_history = $progress_history;
 
         if ($save) $this->save();
+
+        $this->logDebug('SLA statistic progress calculated');
 
         return $this;
     }
@@ -90,6 +94,8 @@ class AvailabilitySlaStatistic extends SlaStatisticAbstract
         })->values()->sortBy('start');
 
         if ($save) $this->save();
+
+        $this->logDebug('SLA statistic history calculated');
 
         return $this;
     }

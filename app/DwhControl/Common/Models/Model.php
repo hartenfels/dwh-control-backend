@@ -12,6 +12,7 @@ use App\DwhControl\Common\Traits\HasHistoryTrait;
 use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Facades\Log;
 use ReflectionClass;
 use ReflectionException;
 
@@ -135,6 +136,78 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model implements Mode
         return array_filter($transformable, function ($t) use ($ignore) {
             return !in_array($t, $ignore);
         });
+    }
+
+    /**
+     * @param string $message
+     * @param string|null $trace
+     * @return string
+     */
+    public function logDebug(string $message, ?string $trace = null): string
+    {
+        if (!config('app.debug')) return '';
+
+        Log::debug($this->getLogString($message, $trace ?? uniqid()));
+
+        return $trace;
+    }
+
+    /**
+     * @param string $message
+     * @param string|null $trace
+     * @return string
+     */
+    public function logNotice(string $message, ?string $trace = null): string
+    {
+        Log::notice($this->getLogString($message, $trace ?? $trace = uniqid()));
+
+        return $trace;
+    }
+
+    /**
+     * @param string $message
+     * @param string|null $trace
+     * @return string
+     */
+    public function logInfo(string $message, ?string $trace = null): string
+    {
+        Log::info($this->getLogString($message, $trace ?? $trace = uniqid()));
+
+        return $trace;
+    }
+
+    /**
+     * @param string $message
+     * @param string|null $trace
+     * @return string
+     */
+    public function logWarning(string $message, ?string $trace = null): string
+    {
+        Log::warning($this->getLogString($message, $trace ?? $trace = uniqid()));
+
+        return $trace;
+    }
+
+    /**
+     * @param string $message
+     * @param string|null $trace
+     * @return string
+     */
+    public function logCritical(string $message, ?string $trace = null): string
+    {
+        Log::critical($this->getLogString($message, $trace ?? $trace = uniqid()));
+
+        return $trace;
+    }
+
+    /**
+     * @param string $message
+     * @param string $trace
+     * @return string
+     */
+    private function getLogString(string $message, string $trace): string
+    {
+        return sprintf('[%s] %s - %s', $trace, getCallingFunctionName($this->id), $message);
     }
 
     /**

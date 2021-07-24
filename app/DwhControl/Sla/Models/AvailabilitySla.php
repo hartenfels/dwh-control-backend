@@ -106,24 +106,31 @@ class AvailabilitySla extends Sla
 
         if ($this->range_start->gt($time)) {
             $this->setWaiting()->save();
+            $this->logDebug('SLA calculated (waiting not yet in time range)');
             return $this;
         }
 
         if ($this->progress_last_intime?->progress_percent >= $this->target_percent) {
             $this->setAchieved($this->progress_last_intime)->setClosed()->save();
+            $this->logDebug('SLA calculated (achieved)');
             return $this;
         }
 
         if ($this->range_end->lte($time)) {
             $this->setFailed($this->progress_last_intime)->setClosed()->save();
+            $this->logDebug('SLA calculated (failed)');
             return $this;
         }
 
         if ($this->range_end->gt($time)) {
             $this->setLate()->save();
+            $this->logDebug('SLA calculated (late)');
         }
 
         $this->setWaiting($this->progress_last_intime)->save();
+        $this->logDebug('SLA calculated (waiting)');
+
+
         return $this;
     }
 }

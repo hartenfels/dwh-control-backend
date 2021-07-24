@@ -113,34 +113,42 @@ class DeliverableSla extends Sla
 
         if ($this->range_start->gt($time)) {
             $this->setWaiting()->save();
+            $this->logDebug('SLA calculated (waiting not yet in time range)');
             return $this;
         }
 
         if ($has_achieved_in_time) {
             $this->setAchieved($this->progress_first_intime_achieved)->setClosed()->save();
+            $this->logDebug('SLA calculated (achieved)');
             return $this;
         }
 
         if ($has_achieved_late) {
             $this->setFailed($this->progress_last_intime, $this->progress_last_late, $this->progress_first_late_achieved)->setClosed()->save();
+            $this->logDebug('SLA calculated (failed achieved late)');
             return $this;
         }
 
         if ($has_progress_in_time && $this->range_end->lte($time)) {
             $this->setFailed($this->progress_last_intime)->setClosed()->save();
+            $this->logDebug('SLA calculated (failed in time)');
             return $this;
         }
 
         if ($this->range_end->lte($time)) {
             $this->setFailed()->setClosed()->save();
+            $this->logDebug('SLA calculated (failed w/o progress)');
             return $this;
         }
 
         if ($this->range_end->gt($time)) {
             $this->setLate()->save();
+            $this->logDebug('SLA calculated (late w/o progress)');
         }
 
         $this->setWaiting()->save();
+        $this->logDebug('SLA calculated (waiting)');
+
         return $this;
     }
 }

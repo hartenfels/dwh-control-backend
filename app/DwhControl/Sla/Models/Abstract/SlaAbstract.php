@@ -98,6 +98,9 @@ abstract class SlaAbstract extends Model implements SlaInterface
              'type' => $this->type
          ]);
 
+         $this->logDebug(sprintf('Received progress: progress: %s, percent: %s, source: %s',
+             $progress->id, $progress_percent, $source));
+
          if ($calculate) $this->calculate();
 
          return $progress;
@@ -117,6 +120,7 @@ abstract class SlaAbstract extends Model implements SlaInterface
         if ($this->range_start->gt($time)) {
             if ($calculate) $this->calculate($time);
 
+            $this->logDebug(sprintf('SLA progress with time %s skipped due to time constraints', $time->format('c')));
             return $this;
         }
 
@@ -164,6 +168,10 @@ abstract class SlaAbstract extends Model implements SlaInterface
         $this->setProgressIntime($progress_intime, $progress_first_achieved_in_time, $progress_best_in_time)
             ->setProgressLate($progress_late, $progress_first_achieved_late)
             ->save();
+
+        $this->logDebug(sprintf('Fetched and processed SLA progress. intime: %s, first_achieved_in_time: %s, best_in_time: %s, late: %s, first_achieved_late: %s',
+            $progress_intime->progress_percent, $progress_first_achieved_in_time->progress_percent, $progress_best_in_time->progress_percent,
+            $progress_late->progress_percent, $progress_first_achieved_late->progress_percent));
 
         if ($calculate) $this->calculate($time);
 
@@ -366,6 +374,8 @@ abstract class SlaAbstract extends Model implements SlaInterface
         }
 
         $statistic->calculate();
+
+        $this->logDebug('Statistic calculated');
 
         return $this;
     }
