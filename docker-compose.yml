@@ -1,0 +1,22 @@
+version: '3'
+services:
+  db:
+    image: mariadb:10.6.3
+    ports:
+      - '3306:3306'
+    environment:
+      - 'MARIADB_ROOT_PASSWORD=use4dwhcontrol'
+    volumes:
+      - './docker/conf.d:/etc/mysql/conf.d:ro'
+  elastic:
+    image: elasticsearch:7.13.4
+    ports:
+      - '9200:9200'
+      - '9300:9300'
+    environment:
+      - 'discovery.type=single-node'
+  nginx:
+    image: nginx:1.19.7
+    network_mode: host
+    volumes:
+      - './docker/nginx.conf:/etc/nginx/nginx.conf:ro'
